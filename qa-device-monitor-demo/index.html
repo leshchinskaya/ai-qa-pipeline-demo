@@ -1,0 +1,2599 @@
+<!DOCTYPE html>
+<html lang="ru" data-accent-scheme="blue">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate">
+    <meta http-equiv="Pragma" content="no-cache">
+    <meta http-equiv="Expires" content="0">
+    <title>Surf Device Monitor</title>
+    
+    <!-- Favicon -->
+    <link rel="icon" type="image/svg+xml" href="favicon.svg">
+    <link rel="icon" type="image/png" sizes="180x180" href="icons/icon-180.png">
+    <link rel="shortcut icon" href="favicon.ico">
+    
+    <!-- PWA Manifest -->
+    <link rel="manifest" href="manifest.json">
+    
+    <!-- iOS Home Screen Icon -->
+    <link rel="apple-touch-icon" href="icons/icon-180.png">
+    <link rel="apple-touch-icon" sizes="152x152" href="icons/icon-152.png">
+    <link rel="apple-touch-icon" sizes="180x180" href="icons/icon-180.png">
+    <link rel="apple-touch-icon" sizes="167x167" href="icons/icon-180.png">
+    
+    <!-- iOS PWA Settings -->
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+    <meta name="apple-mobile-web-app-title" content="Devices">
+    
+    <!-- Android Theme -->
+    <meta name="theme-color" content="#071224">
+    <link rel="stylesheet" href="css/styles.css?v=demo4">
+    <!-- DEMO: оставить только каталог, скрыть остальные вкладки и матрицу покрытия -->
+    <link rel="stylesheet" href="css/demo.css?v=demo">
+</head>
+<body>
+    <!-- Экран загрузки (показывается пока проверяется авторизация) -->
+    <div id="loading-screen" class="loading-screen">
+        <div class="loading-container">
+            <div class="loading-spinner"></div>
+            <p>Загрузка...</p>
+        </div>
+    </div>
+
+    <!-- Экран авторизации -->
+    <div id="auth-screen" class="auth-screen hidden">
+        <div class="auth-container">
+            <div class="auth-logo">
+                <div class="logo-icon">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                        <rect x="2" y="3" width="20" height="14" rx="2"/>
+                        <path d="M8 21h8"/>
+                        <path d="M12 17v4"/>
+                    </svg>
+                </div>
+                <h1>Device Monitor</h1>
+                <p class="auth-subtitle">Система бронирования устройств</p>
+            </div>
+            <button id="google-signin-btn" class="google-signin-btn">
+                <svg viewBox="0 0 24 24" class="google-icon">
+                    <path fill="#4285F4" d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z"/>
+                    <path fill="#34A853" d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z"/>
+                    <path fill="#FBBC05" d="M5.84 14.09c-.22-.66-.35-1.36-.35-2.09s.13-1.43.35-2.09V7.07H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.93l2.85-2.22.81-.62z"/>
+                    <path fill="#EA4335" d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.07l3.66 2.84c.87-2.6 3.3-4.53 6.16-4.53z"/>
+                </svg>
+                <span>Войти через Google</span>
+            </button>
+            <p class="auth-note">Используйте корпоративный Google аккаунт</p>
+            <p class="auth-version">Версия <span class="version"></span></p>
+        </div>
+        <div class="auth-background">
+            <div class="grid-pattern"></div>
+        </div>
+    </div>
+
+    <!-- Основное приложение -->
+    <div id="app" class="app hidden">
+        <!-- Навигация -->
+        <nav class="navbar">
+            <div class="nav-brand">
+                <div class="nav-logo">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                        <rect x="2" y="3" width="20" height="14" rx="2"/>
+                        <path d="M8 21h8"/>
+                        <path d="M12 17v4"/>
+                    </svg>
+                </div>
+                <span>Device Monitor</span>
+                <span class="version"></span>
+                <span id="notification-badge" class="nav-badge hidden" aria-label="Непрочитанные уведомления">0</span>
+            </div>
+            <div class="nav-tabs">
+                <button class="nav-tab nav-tab-icon-only active" data-tab="devices" aria-label="Устройства" title="Устройства">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                        <rect x="5" y="2" width="14" height="20" rx="2"/>
+                        <circle cx="12" cy="18" r="1"/>
+                    </svg>
+                    <span class="nav-tab-label">Устройства</span>
+                </button>
+                <button class="nav-tab nav-tab-icon-only" data-tab="history" aria-label="История" title="История">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                        <circle cx="12" cy="12" r="10"/>
+                        <polyline points="12 6 12 12 16 14"/>
+                    </svg>
+                    <span class="nav-tab-label">История</span>
+                </button>
+                <button class="nav-tab nav-tab-icon-only" data-tab="activity" aria-label="Активность" title="Активность">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                        <path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/>
+                        <circle cx="9" cy="7" r="4"/>
+                        <path d="M23 21v-2a4 4 0 0 0-3-3.87"/>
+                        <path d="M16 3.13a4 4 0 0 1 0 7.75"/>
+                    </svg>
+                    <span class="nav-tab-label">Активность</span>
+                </button>
+                <button class="nav-tab nav-tab-icon-only hidden" data-tab="calendar" aria-label="Календарь" title="Календарь">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                        <rect x="3" y="4" width="18" height="18" rx="2" ry="2"/>
+                        <line x1="16" y1="2" x2="16" y2="6"/>
+                        <line x1="8" y1="2" x2="8" y2="6"/>
+                        <line x1="3" y1="10" x2="21" y2="10"/>
+                    </svg>
+                    <span class="nav-tab-label">Календарь</span>
+                </button>
+                <button class="nav-tab nav-tab-icon-only" data-tab="chat" aria-label="Чат" title="Чат">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                        <path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/>
+                    </svg>
+                    <span class="nav-tab-label">Чат</span>
+                    <span id="chat-unread-badge" class="nav-badge hidden">0</span>
+                </button>
+                <button class="nav-tab nav-tab-icon-only" data-tab="admin" id="admin-tab" aria-label="Админ" title="Админ">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                        <circle cx="12" cy="12" r="3"/>
+                        <path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1 0 2.83 2 2 0 0 1-2.83 0l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-2 2 2 2 0 0 1-2-2v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83 0 2 2 0 0 1 0-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1-2-2 2 2 0 0 1 2-2h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 0-2.83 2 2 0 0 1 2.83 0l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 2-2 2 2 0 0 1 2 2v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 0 2 2 0 0 1 0 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 2 2 2 2 0 0 1-2 2h-.09a1.65 1.65 0 0 0-1.51 1z"/>
+                    </svg>
+                    <span class="nav-tab-label">Админ</span>
+                </button>
+            </div>
+            <div class="nav-user">
+                <div class="user-profile-wrapper">
+                    <button id="user-profile-btn" class="user-profile-btn" title="Профиль">
+                        <img id="user-avatar" src="" alt="User" class="user-avatar">
+                        <div class="user-info">
+                            <span id="user-name" class="user-name"></span>
+                            <span id="user-role" class="user-role"></span>
+                        </div>
+                        <div id="user-rank-widget" class="user-rank-widget hidden">
+                            <span
+                            id="user-rank-badge"
+                            class="user-rank-badge-btn"
+                            role="button"
+                            tabindex="0"
+                            aria-label="Позиция в рейтинге активности"
+                            aria-expanded="false"
+                            aria-controls="user-rank-popover"
+                            ></span>
+                            <div id="user-rank-popover" class="user-rank-popover hidden" role="status"></div>
+                        </div>
+                    </button>
+                </div>
+                <div class="accent-scheme-control">
+                    <button
+                        id="accent-scheme-toggle-btn"
+                        class="accent-scheme-toggle-btn"
+                        type="button"
+                        title="Цвет интерфейса"
+                        aria-label="Выбрать цвет интерфейса"
+                        aria-haspopup="true"
+                        aria-expanded="false"
+                        aria-controls="accent-scheme-menu"
+                    >
+                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                            <circle cx="13.5" cy="6.5" r=".5"/>
+                            <circle cx="17.5" cy="10.5" r=".5"/>
+                            <circle cx="8.5" cy="7.5" r=".5"/>
+                            <circle cx="6.5" cy="12.5" r=".5"/>
+                            <path d="M12 3a9 9 0 1 0 0 18h1.2a1.8 1.8 0 0 0 1.28-3.08 1.95 1.95 0 0 1 1.38-3.32H18a3 3 0 0 0 3-3A9 9 0 0 0 12 3z"/>
+                        </svg>
+                        <span class="accent-scheme-toggle-swatch" aria-hidden="true"></span>
+                    </button>
+                    <div id="accent-scheme-menu" class="accent-scheme-menu hidden" role="menu" aria-label="Выбор цветовой схемы">
+                        <button
+                            type="button"
+                            class="accent-scheme-option is-green"
+                            data-accent-scheme="green"
+                            aria-label="Surf Green"
+                            title="Surf Green"
+                            aria-pressed="false"
+                        ></button>
+                        <button
+                            type="button"
+                            class="accent-scheme-option is-blue"
+                            data-accent-scheme="blue"
+                            aria-label="Classic Blue"
+                            title="Classic Blue"
+                            aria-pressed="true"
+                        ></button>
+                        <button
+                            type="button"
+                            class="accent-scheme-option is-violet"
+                            data-accent-scheme="violet"
+                            aria-label="Soft Violet"
+                            title="Soft Violet"
+                            aria-pressed="false"
+                        ></button>
+                    </div>
+                </div>
+                <button id="theme-toggle-btn" class="theme-toggle-btn" title="Переключить тему">
+                    <!-- Moon icon (light mode) -->
+                    <svg class="icon-moon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                        <path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"/>
+                    </svg>
+                    <!-- Sun icon (dark mode) -->
+                    <svg class="icon-sun" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                        <circle cx="12" cy="12" r="5"/>
+                        <line x1="12" y1="1" x2="12" y2="3"/>
+                        <line x1="12" y1="21" x2="12" y2="23"/>
+                        <line x1="4.22" y1="4.22" x2="5.64" y2="5.64"/>
+                        <line x1="18.36" y1="18.36" x2="19.78" y2="19.78"/>
+                        <line x1="1" y1="12" x2="3" y2="12"/>
+                        <line x1="21" y1="12" x2="23" y2="12"/>
+                        <line x1="4.22" y1="19.78" x2="5.64" y2="18.36"/>
+                        <line x1="18.36" y1="5.64" x2="19.78" y2="4.22"/>
+                    </svg>
+                </button>
+                <button id="signout-btn" class="signout-btn" title="Выйти">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                        <path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"/>
+                        <polyline points="16 17 21 12 16 7"/>
+                        <line x1="21" y1="12" x2="9" y2="12"/>
+                    </svg>
+                </button>
+            </div>
+        </nav>
+
+        <!-- Контент -->
+        <main class="main-content">
+            <!-- Секция: Карточка определённого устройства (мобильный режим) -->
+            <section id="detected-device-section" class="tab-content">
+                <div class="detected-device-container">
+                    <div class="detected-device-header">
+                        <h2 id="detected-device-title">Ваше устройство</h2>
+                        <button id="show-all-devices-btn" class="secondary-btn">
+                            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="16" height="16">
+                                <rect x="3" y="3" width="7" height="7"/>
+                                <rect x="14" y="3" width="7" height="7"/>
+                                <rect x="14" y="14" width="7" height="7"/>
+                                <rect x="3" y="14" width="7" height="7"/>
+                            </svg>
+                            <span>Все устройства</span>
+                        </button>
+                    </div>
+                    <div id="detected-device-card" class="detected-device-card">
+                        <!-- Карточка устройства будет добавлена динамически -->
+                    </div>
+                </div>
+            </section>
+
+            <!-- Секция: Выбор из списка подходящих устройств -->
+            <section id="device-selection-section" class="tab-content">
+                <div class="device-selection-container">
+                    <div class="device-selection-header">
+                        <h2>Выберите ваше устройство</h2>
+                        <p class="device-selection-hint" id="device-selection-hint">
+                            Найдено несколько подходящих устройств
+                        </p>
+                        <button id="show-all-devices-btn-2" class="secondary-btn">
+                            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="16" height="16">
+                                <rect x="3" y="3" width="7" height="7"/>
+                                <rect x="14" y="3" width="7" height="7"/>
+                                <rect x="14" y="14" width="7" height="7"/>
+                                <rect x="3" y="14" width="7" height="7"/>
+                            </svg>
+                            <span>Все устройства</span>
+                        </button>
+                    </div>
+                    <div id="device-selection-grid" class="devices-grid">
+                        <!-- Карточки подходящих устройств будут добавлены динамически -->
+                    </div>
+                </div>
+            </section>
+
+            <!-- Вкладка: Устройства -->
+            <section id="devices-section" class="tab-content active">
+                <div class="section-header">
+                    <h2>Устройства</h2>
+                    <div class="filter-group">
+                        <div class="search-wrapper" id="devices-search-wrapper">
+                            <input type="text" id="devices-search" class="search-input" placeholder="Поиск: iPhone, Android 14, Samsung, MIUI...">
+                            <button type="button" class="search-clear" id="devices-search-clear" title="Очистить">
+                                <svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="2">
+                                    <line x1="18" y1="6" x2="6" y2="18"></line>
+                                    <line x1="6" y1="6" x2="18" y2="18"></line>
+                                </svg>
+                            </button>
+                        </div>
+                        <button class="filter-btn qr-scan-btn hidden" id="qr-scan-btn" title="Сканировать QR-код устройства" aria-label="Сканировать QR">
+                            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="16" height="16">
+                                <rect x="3" y="3" width="7" height="7" rx="1"/>
+                                <rect x="14" y="3" width="7" height="7" rx="1"/>
+                                <rect x="3" y="14" width="7" height="7" rx="1"/>
+                                <path d="M14 14h3v3M21 14v3M14 21h3M17 17h4v4"/>
+                            </svg>
+                            <span>Сканировать QR</span>
+                        </button>
+                        <button class="filter-btn my-devices-btn" id="my-devices-btn" title="Мои устройства">
+                            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="16" height="16">
+                                <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/>
+                                <circle cx="12" cy="7" r="4"/>
+                            </svg>
+                            <span>Мои</span>
+                            <span id="my-devices-overdue-indicator" class="my-devices-overdue-indicator hidden" aria-hidden="true"></span>
+                        </button>
+                        <button class="filter-btn return-all-btn hidden" id="return-all-devices-btn" title="Вернуть все мои устройства">
+                            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="16" height="16">
+                                <polyline points="9 10 4 15 9 20"/>
+                                <path d="M20 4v7a4 4 0 0 1-4 4H4"/>
+                            </svg>
+                            <span id="return-all-devices-btn-label">Вернуть все</span>
+                        </button>
+                        <!-- Расширенные фильтры -->
+                        <div class="filters-dropdown-wrapper">
+                            <button id="toggle-filters-btn" class="filter-btn filters-toggle" title="Фильтры">
+                                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="16" height="16">
+                                    <polygon points="22 3 2 3 10 12.46 10 19 14 21 14 12.46 22 3"/>
+                                </svg>
+                                <span>Фильтры</span>
+                                <span id="filters-badge" class="filters-badge hidden">0</span>
+                            </button>
+                            <div id="filters-panel" class="filters-dropdown hidden">
+                                <div class="filters-dropdown-header">
+                                    <span>Фильтры</span>
+                                    <button type="button" id="filters-reset" class="filters-reset-btn">Сбросить</button>
+                                </div>
+                                <div class="filters-section">
+                                    <div class="filters-section-title">Статус</div>
+                                    <div class="filters-options">
+                                        <label class="filter-option">
+                                            <input type="radio" name="filter-status" value="all" checked>
+                                            <span>Все</span>
+                                        </label>
+                                        <label class="filter-option">
+                                            <input type="radio" name="filter-status" value="available">
+                                            <span>Свободные</span>
+                                        </label>
+                                        <label class="filter-option">
+                                            <input type="radio" name="filter-status" value="booked">
+                                            <span>Занятые</span>
+                                        </label>
+                                        <label class="filter-option">
+                                            <input type="radio" name="filter-status" value="my">
+                                            <span>Мои</span>
+                                        </label>
+                                        <label class="filter-option">
+                                            <input type="radio" name="filter-status" value="unused_by_me">
+                                            <span>Не используемые мной</span>
+                                        </label>
+                                        <label class="filter-option">
+                                            <input type="radio" name="filter-status" value="external">
+                                            <span>Вне отдела</span>
+                                        </label>
+                                    </div>
+                                </div>
+                                <div class="filters-section">
+                                    <div class="filters-section-title">Тип устройства</div>
+                                    <div class="filters-options">
+                                        <label class="filter-option">
+                                            <input type="checkbox" name="filter-type" value="phone" checked>
+                                            <span>Телефоны</span>
+                                        </label>
+                                        <label class="filter-option">
+                                            <input type="checkbox" name="filter-type" value="tablet" checked>
+                                            <span>Планшеты</span>
+                                        </label>
+                                    </div>
+                                </div>
+                                <div class="filters-section">
+                                    <div class="filters-section-title">Операционная система</div>
+                                    <div class="filters-options">
+                                        <label class="filter-option">
+                                            <input type="checkbox" name="filter-os" value="android" checked>
+                                            <span>Android</span>
+                                        </label>
+                                        <label class="filter-option">
+                                            <input type="checkbox" name="filter-os" value="ios" checked>
+                                            <span>iOS</span>
+                                        </label>
+                                        <label class="filter-option">
+                                            <input type="checkbox" name="filter-os" value="ipados" checked>
+                                            <span>iPadOS</span>
+                                        </label>
+                                    </div>
+                                </div>
+                                <div class="filters-section admin-only" id="filter-working-section">
+                                    <div class="filters-section-title">Состояние</div>
+                                    <div class="filters-options">
+                                        <label class="filter-option">
+                                            <input type="radio" name="filter-working" value="working" checked>
+                                            <span>Только рабочие</span>
+                                        </label>
+                                        <label class="filter-option">
+                                            <input type="radio" name="filter-working" value="broken">
+                                            <span>Только нерабочие</span>
+                                        </label>
+                                        <label class="filter-option">
+                                            <input type="radio" name="filter-working" value="all">
+                                            <span>Все</span>
+                                        </label>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        <!-- Подбор похожих устройств -->
+                        <div class="filters-dropdown-wrapper">
+                            <button id="device-matcher-btn" class="filter-btn device-matcher-toggle" title="Подобрать похожее устройство">
+                                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="16" height="16">
+                                    <circle cx="11" cy="11" r="8"/>
+                                    <path d="M21 21l-4.35-4.35"/>
+                                    <path d="M11 8v6"/>
+                                    <path d="M8 11h6"/>
+                                </svg>
+                                <span>Подобрать</span>
+                            </button>
+                            <div id="device-matcher-panel" class="filters-dropdown device-matcher-panel hidden">
+                                <div class="filters-dropdown-header">
+                                    <span>Подбор похожего устройства</span>
+                                    <button type="button" id="device-matcher-reset" class="filters-reset-btn">Сбросить</button>
+                                </div>
+                                <div class="device-matcher-form">
+                                    <div class="form-row">
+                                        <div class="form-group">
+                                            <label for="matcher-os">ОС *</label>
+                                            <select id="matcher-os" class="form-input" required>
+                                                <option value="">Выберите ОС</option>
+                                                <option value="android">Android</option>
+                                                <option value="ios">iOS</option>
+                                                <option value="ipados">iPadOS</option>
+                                            </select>
+                                        </div>
+                                        <div class="form-group">
+                                            <label for="matcher-version">Версия ОС</label>
+                                            <input type="text" id="matcher-version" class="form-input" placeholder="13, 14, 17...">
+                                        </div>
+                                    </div>
+                                    <div class="form-row">
+                                        <div class="form-group">
+                                            <label for="matcher-screen">Разрешение экрана</label>
+                                            <input type="text" id="matcher-screen" class="form-input" placeholder="1080x2400">
+                                        </div>
+                                        <div class="form-group">
+                                            <label for="matcher-aspect-ratio">Соотношение сторон</label>
+                                            <input type="text" id="matcher-aspect-ratio" class="form-input" placeholder="20:9">
+                                        </div>
+                                    </div>
+                                    <div class="form-row">
+                                        <div class="form-group">
+                                            <label class="matcher-checkbox-label" for="matcher-exact-screen">
+                                                <input type="checkbox" id="matcher-exact-screen">
+                                                <span>Только точное разрешение</span>
+                                            </label>
+                                        </div>
+                                        <div class="form-group">
+                                            <label for="matcher-manufacturer">Производитель</label>
+                                            <select id="matcher-manufacturer" class="form-input">
+                                                <option value="">Любой</option>
+                                                <!-- Опции будут добавлены динамически -->
+                                            </select>
+                                        </div>
+                                    </div>
+                                    <div class="form-row">
+                                        <div class="form-group">
+                                            <label for="matcher-shell">Оболочка</label>
+                                            <select id="matcher-shell" class="form-input">
+                                                <option value="">Любая</option>
+                                                <!-- Опции будут добавлены динамически -->
+                                            </select>
+                                        </div>
+                                        <div class="form-group">
+                                            <label for="matcher-bluetooth">Bluetooth</label>
+                                            <input type="text" id="matcher-bluetooth" class="form-input" placeholder="5.0">
+                                        </div>
+                                    </div>
+                                    <div class="device-matcher-actions">
+                                        <button type="button" id="device-matcher-search" class="primary-btn">
+                                            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="16" height="16">
+                                                <circle cx="11" cy="11" r="8"/>
+                                                <path d="M21 21l-4.35-4.35"/>
+                                            </svg>
+                                            Найти похожие
+                                        </button>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <div class="device-view-tabs hidden">
+                    <button class="device-view-tab active" data-device-view="catalog">Каталог</button>
+                    <button class="device-view-tab" data-device-view="coverage">Матрица покрытия</button>
+                </div>
+                <div id="devices-catalog-view" class="device-view-content active">
+                    <!-- Индикатор режима подбора -->
+                    <div id="device-matcher-active" class="device-matcher-active hidden">
+                        <div class="matcher-active-content">
+                            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="18" height="18">
+                                <circle cx="11" cy="11" r="8"/>
+                                <path d="M21 21l-4.35-4.35"/>
+                            </svg>
+                            <span>Режим подбора устройств активен</span>
+                            <span id="matcher-criteria-summary" class="matcher-criteria-summary"></span>
+                        </div>
+                        <button id="device-matcher-close" class="matcher-close-btn" title="Выйти из режима подбора">
+                            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="16" height="16">
+                                <line x1="18" y1="6" x2="6" y2="18"/>
+                                <line x1="6" y1="6" x2="18" y2="18"/>
+                            </svg>
+                        </button>
+                    </div>
+                    <div id="devices-count" class="devices-count"></div>
+                    <div id="devices-grid" class="devices-grid">
+                        <!-- Карточки устройств будут добавлены динамически -->
+                    </div>
+                    
+                    <!-- Результаты подбора устройств -->
+                    <div id="device-matcher-results" class="device-matcher-results hidden">
+                        <!-- Блок точных совпадений -->
+                        <div id="matcher-exact-matches" class="matcher-exact-block hidden">
+                            <h3 class="matcher-section-title">
+                                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="20" height="20">
+                                    <polyline points="20 6 9 17 4 12"/>
+                                </svg>
+                                Точные совпадения
+                            </h3>
+                            <div id="exact-matches-grid" class="devices-grid"></div>
+                        </div>
+                        
+                        <!-- Табы категорий -->
+                        <div id="matcher-category-tabs" class="matcher-category-tabs">
+                            <div class="matcher-tabs-header">
+                                <button class="matcher-tab active" data-tab="system">
+                                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="16" height="16">
+                                        <rect x="5" y="2" width="14" height="20" rx="2"/>
+                                        <circle cx="12" cy="18" r="1"/>
+                                    </svg>
+                                    По системе
+                                </button>
+                                <button class="matcher-tab" data-tab="manufacturer">
+                                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="16" height="16">
+                                        <path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/>
+                                        <polyline points="9 22 9 12 15 12 15 22"/>
+                                    </svg>
+                                    По производителю
+                                </button>
+                                <button class="matcher-tab" data-tab="screen">
+                                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="16" height="16">
+                                        <rect x="2" y="3" width="20" height="14" rx="2"/>
+                                        <line x1="8" y1="21" x2="16" y2="21"/>
+                                        <line x1="12" y1="17" x2="12" y2="21"/>
+                                    </svg>
+                                    По экрану
+                                </button>
+                            </div>
+                            <div class="matcher-tabs-content">
+                                <div class="matcher-tab-panel active" id="tab-system"></div>
+                                <div class="matcher-tab-panel" id="tab-manufacturer"></div>
+                                <div class="matcher-tab-panel" id="tab-screen"></div>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div id="no-devices" class="empty-state hidden">
+                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5">
+                            <rect x="5" y="2" width="14" height="20" rx="2"/>
+                            <circle cx="12" cy="18" r="1"/>
+                        </svg>
+                        <p>Устройства не найдены</p>
+                    </div>
+                </div>
+                <div id="devices-coverage-view" class="device-view-content">
+                    <div class="coverage-toolbar">
+                        <div class="form-group">
+                            <label>Проект</label>
+                            <div class="filters-dropdown-wrapper coverage-filter-wrapper">
+                                <button id="coverage-project-filter-btn" class="filter-btn filters-toggle" type="button" title="Выбор проекта">
+                                    <span id="coverage-project-filter-label">Все проекты</span>
+                                </button>
+                                <div id="coverage-project-filter-panel" class="filters-dropdown hidden">
+                                    <div class="filters-dropdown-header">
+                                        <span>Проект</span>
+                                    </div>
+                                    <div id="coverage-project-filter-options" class="filters-section" style="border-bottom: none;"></div>
+                                </div>
+                            </div>
+                            <select id="coverage-project-select" class="form-input hidden"></select>
+                        </div>
+                        <div class="form-group coverage-threshold-group">
+                            <label>Порог неиспользования</label>
+                            <div class="filters-dropdown-wrapper coverage-filter-wrapper">
+                                <button id="coverage-stale-filter-btn" class="filter-btn filters-toggle" type="button" title="Порог неиспользования">
+                                    <span id="coverage-stale-filter-label">30 дней</span>
+                                </button>
+                                <div id="coverage-stale-filter-panel" class="filters-dropdown hidden">
+                                    <div class="filters-dropdown-header">
+                                        <span>Порог неиспользования</span>
+                                    </div>
+                                    <div class="filters-section">
+                                        <div id="coverage-stale-filter-options" class="filters-options"></div>
+                                    </div>
+                                    <div class="filters-section" style="border-bottom: none;">
+                                        <label for="coverage-stale-days-custom">Свое значение</label>
+                                        <input type="number" id="coverage-stale-days-custom" class="form-input" min="1" value="30">
+                                    </div>
+                                </div>
+                            </div>
+                            <input type="number" id="coverage-stale-days" class="form-input hidden" min="1" value="30">
+                        </div>
+                    </div>
+                    <div id="coverage-empty-state" class="empty-state hidden">
+                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5">
+                            <path d="M3 3v18h18"/>
+                            <path d="M7 15l3-3 3 2 4-5"/>
+                        </svg>
+                        <p>Нет доступных проектов для матрицы покрытия</p>
+                    </div>
+                        <div id="coverage-content">
+                        <div id="coverage-summary" class="coverage-summary-grid"></div>
+                        <div id="coverage-detail-tabs" class="coverage-analysis-tabs">
+                            <button class="coverage-analysis-tab active" data-coverage-tab="recommendations">Рекомендации</button>
+                            <button class="coverage-analysis-tab" data-coverage-tab="usage">Использование</button>
+                        </div>
+                        <div id="coverage-recommendations" class="coverage-tab-content active">
+                            <div class="coverage-recommendations-header">
+                                <button id="coverage-copy-btn" class="coverage-copy-btn" type="button" title="Скопировать устройства из рекомендаций">
+                                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="14" height="14">
+                                        <rect x="9" y="9" width="13" height="13" rx="2"/>
+                                        <path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"/>
+                                    </svg>
+                                    <span id="coverage-copy-label">Скопировать список</span>
+                                </button>
+                            </div>
+                            <div id="coverage-recommendations-list" class="coverage-card-list"></div>
+                        </div>
+                        <div id="coverage-usage" class="coverage-tab-content">
+                            <div class="coverage-usage-toolbar">
+                                <div class="form-group coverage-usage-search-group">
+                                    <label for="coverage-usage-search">Поиск по использованию</label>
+                                    <input type="text" id="coverage-usage-search" class="form-input" placeholder="Устройство, пользователь, тип использования">
+                                </div>
+                                <div class="form-group coverage-usage-sort-group">
+                                    <label for="coverage-usage-sort">Сортировка</label>
+                                    <select id="coverage-usage-sort" class="form-input">
+                                        <option value="recent">По последней активности</option>
+                                        <option value="count">По числу использований</option>
+                                        <option value="name">По названию устройства</option>
+                                    </select>
+                                </div>
+                                <div id="coverage-usage-meta" class="coverage-usage-meta">Появится после выбора проекта</div>
+                            </div>
+                            <div id="coverage-usage-list" class="coverage-usage-list"></div>
+                        </div>
+                        <div id="coverage-stats" class="coverage-inline-stats hidden">
+                            <div class="coverage-stats-shell">
+                                <section class="coverage-stats-panel">
+                                    <div class="coverage-panel-header">
+                                        <h3 id="coverage-overview-title">Общая картина</h3>
+                                        <p id="coverage-overview-description">Насколько равномерно проект покрывает совместимые устройства.</p>
+                                    </div>
+                                    <div id="coverage-overview-stats" class="coverage-overview-stats"></div>
+                                </section>
+                                <section class="coverage-stats-panel">
+                                    <div class="coverage-panel-header">
+                                        <h3 id="coverage-top-devices-title">Топ устройств</h3>
+                                        <p id="coverage-top-devices-description">Какие модели используются чаще всего.</p>
+                                    </div>
+                                    <div id="coverage-top-devices" class="top-list"></div>
+                                </section>
+                                <section class="coverage-stats-panel">
+                                    <div class="coverage-panel-header">
+                                        <h3 id="coverage-secondary-title">Платформы</h3>
+                                        <p id="coverage-secondary-description">Разбивка по совместимым платформам и активности на них.</p>
+                                    </div>
+                                    <div id="coverage-platform-distribution" class="coverage-platform-list"></div>
+                                </section>
+                                <section class="coverage-stats-panel">
+                                    <div class="coverage-panel-header">
+                                        <h3 id="coverage-extra-title">На что обратить внимание</h3>
+                                        <p id="coverage-extra-description">Самые важные сигналы для выбора следующего устройства.</p>
+                                    </div>
+                                    <div id="coverage-extra-stats" class="coverage-insights-list"></div>
+                                </section>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </section>
+
+            <!-- Вкладка: История -->
+            <section id="history-section" class="tab-content">
+                <div class="section-header">
+                    <h2>История бронирований</h2>
+                    <div class="filter-group">
+                        <div class="search-wrapper" id="history-search-wrapper">
+                            <input type="text" id="history-search" class="search-input" placeholder="Поиск по устройству или пользователю...">
+                        </div>
+                        <div class="filters-dropdown-wrapper">
+                            <button id="history-filter-btn" class="filter-btn filters-toggle" title="Фильтр действий">
+                                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="16" height="16">
+                                    <polygon points="22 3 2 3 10 12.46 10 19 14 21 14 12.46 22 3"/>
+                                </svg>
+                                <span id="history-filter-label">Все действия</span>
+                            </button>
+                            <div id="history-filter-panel" class="filters-dropdown hidden">
+                                <div class="filters-section" style="border-bottom: none;">
+                                    <div class="filters-options">
+                                        <label class="filter-option">
+                                            <input type="radio" name="history-action" value="all" checked>
+                                            <span>Все действия</span>
+                                        </label>
+                                        <label class="filter-option">
+                                            <input type="radio" name="history-action" value="take">
+                                            <span>Использую</span>
+                                        </label>
+                                        <label class="filter-option">
+                                            <input type="radio" name="history-action" value="return">
+                                            <span>Вернул</span>
+                                        </label>
+                                        <label class="filter-option">
+                                            <input type="radio" name="history-action" value="book">
+                                            <span>Взято домой</span>
+                                        </label>
+                                        <label class="filter-option">
+                                            <input type="radio" name="history-action" value="date_change">
+                                            <span>Изменил дату</span>
+                                        </label>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                
+                <!-- Табы навигации -->
+                <div id="history-tabs" class="history-tabs hidden">
+                    <button class="history-tab active" data-history-tab="timeline">Хронология</button>
+                    <button class="history-tab" data-history-tab="occupied">Занятые устройства</button>
+                </div>
+
+                <!-- Контент таба: Хронология -->
+                <div id="history-timeline-tab" class="history-tab-content active">
+                    <div class="history-table-container">
+                        <table class="history-table">
+                            <thead>
+                                <tr>
+                                    <th>Дата</th>
+                                    <th>Устройство</th>
+                                    <th>Пользователь</th>
+                                    <th>Действие</th>
+                                    <th>Место</th>
+                                    <th>Период</th>
+                                    <th id="history-actions-header" class="hidden">Действия</th>
+                                </tr>
+                            </thead>
+                            <tbody id="history-tbody">
+                                <!-- Записи истории будут добавлены динамически -->
+                            </tbody>
+                        </table>
+                    </div>
+                    <!-- Пагинация истории -->
+                    <div id="history-pagination" class="history-pagination hidden">
+                        <button id="history-prev-btn" class="pagination-arrow" disabled>
+                            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="16" height="16">
+                                <polyline points="15 18 9 12 15 6"/>
+                            </svg>
+                        </button>
+                        <div id="history-page-numbers" class="pagination-numbers"></div>
+                        <button id="history-next-btn" class="pagination-arrow">
+                            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="16" height="16">
+                                <polyline points="9 18 15 12 9 6"/>
+                            </svg>
+                        </button>
+                    </div>
+                    <div id="history-load-more-wrapper" class="history-load-more hidden">
+                        <p id="history-load-more-hint" class="history-load-more-hint"></p>
+                        <button id="history-load-more-btn" class="secondary-btn">Загрузить более ранние записи</button>
+                    </div>
+                    <div id="no-history" class="empty-state hidden">
+                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5">
+                            <circle cx="12" cy="12" r="10"/>
+                            <polyline points="12 6 12 12 16 14"/>
+                        </svg>
+                        <p>История пуста</p>
+                    </div>
+                </div>
+
+                <!-- Контент таба: Занятые устройства -->
+                <div id="history-occupied-tab" class="history-tab-content">
+                    <div id="occupied-devices-container" class="occupied-devices-container">
+                        <!-- Группированные устройства будут добавлены динамически -->
+                    </div>
+                    <div id="no-occupied-devices" class="empty-state hidden">
+                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5">
+                            <rect x="5" y="2" width="14" height="20" rx="2"/>
+                            <circle cx="12" cy="18" r="1"/>
+                        </svg>
+                        <p>Нет занятых устройств</p>
+                    </div>
+                </div>
+            </section>
+
+            <!-- Вкладка: Активность -->
+            <section id="activity-section" class="tab-content">
+                <div class="section-header">
+                    <h2>Активность</h2>
+                    <div class="filter-group">
+                        <select id="activity-period-filter" class="filter-select">
+                            <option value="all">Все время</option>
+                            <option value="30" selected>За месяц</option>
+                            <option value="7">За неделю</option>
+                        </select>
+                    </div>
+                </div>
+
+                <!-- Табы навигации -->
+                <div class="activity-tabs">
+                    <button class="activity-tab active" data-activity-tab="users">Пользователи</button>
+                    <button class="activity-tab" data-activity-tab="devices">Устройства</button>
+                </div>
+
+                <!-- Контент таба: Пользователи -->
+                <div id="activity-users-tab" class="activity-tab-content active">
+                    <!-- Метрики активности пользователей -->
+                <div class="statistics-metrics" id="activity-metrics">
+                    <div class="metric-card">
+                        <div class="metric-icon">
+                            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                <path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/>
+                                <circle cx="9" cy="7" r="4"/>
+                                <path d="M23 21v-2a4 4 0 0 0-3-3.87"/>
+                                <path d="M16 3.13a4 4 0 0 1 0 7.75"/>
+                            </svg>
+                        </div>
+                        <div class="metric-content">
+                            <div class="metric-label">Всего активных пользователей</div>
+                            <div class="metric-value" id="metric-total-active-users">—</div>
+                        </div>
+                    </div>
+
+                    <div class="metric-card">
+                        <div class="metric-icon">
+                            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                <rect x="3" y="4" width="18" height="18" rx="2" ry="2"/>
+                                <line x1="16" y1="2" x2="16" y2="6"/>
+                                <line x1="8" y1="2" x2="8" y2="6"/>
+                                <line x1="3" y1="10" x2="21" y2="10"/>
+                            </svg>
+                        </div>
+                        <div class="metric-content">
+                            <div class="metric-label">Среднее бронирований на пользователя за период</div>
+                            <div class="metric-value" id="metric-avg-bookings-activity">—</div>
+                        </div>
+                    </div>
+
+                    <div class="metric-card">
+                        <div class="metric-icon">
+                            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                <path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z"/>
+                            </svg>
+                        </div>
+                        <div class="metric-content">
+                            <div class="metric-label">Победитель (по количеству различных устройств)</div>
+                            <div class="metric-value" id="metric-most-active-user">—</div>
+                        </div>
+                    </div>
+
+                    <div class="metric-card">
+                        <div class="metric-icon">
+                            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                <polyline points="22 12 18 12 15 21 9 3 6 12 2 12"/>
+                            </svg>
+                        </div>
+                        <div class="metric-content">
+                            <div class="metric-label">Всего бронирований</div>
+                            <div class="metric-value" id="metric-total-bookings-activity">—</div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Таблица активности пользователей -->
+                <div class="statistics-section">
+                    <h3>Детальная активность пользователей</h3>
+                    <div class="statistics-table-container">
+                        <table class="statistics-table" id="activity-table">
+                            <thead>
+                                <tr>
+                                    <th data-sort="name" class="sortable">Пользователь</th>
+                                    <th data-sort="uniqueDevices" class="sortable">Различных устройств</th>
+                                    <th data-sort="bookings" class="sortable">Бронирований</th>
+                                    <th data-sort="percentage" class="sortable">Процент бронирований от общего</th>
+                                    <th>Любимые устройства</th>
+                                    <th data-sort="lastActivity" class="sortable">Последняя активность</th>
+                                </tr>
+                            </thead>
+                            <tbody id="activity-tbody">
+                                <!-- Будет заполнено динамически -->
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+
+                <!-- График активности пользователей -->
+                <div class="statistics-section">
+                    <h3>График активности пользователей (топ-8)</h3>
+                    <div class="chart-card" id="chart-activity-wrapper">
+                        <canvas id="chart-activity-users"></canvas>
+                    </div>
+                </div>
+                </div>
+
+                <!-- Контент таба: Устройства -->
+                <div id="activity-devices-tab" class="activity-tab-content">
+                    <!-- Метрики активности устройств -->
+                    <div class="statistics-metrics" id="activity-devices-metrics">
+                        <div class="metric-card">
+                            <div class="metric-icon">
+                                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                    <rect x="5" y="2" width="14" height="20" rx="2"/>
+                                    <circle cx="12" cy="18" r="1"/>
+                                </svg>
+                            </div>
+                            <div class="metric-content">
+                                <div class="metric-label">Всего активных устройств</div>
+                                <div class="metric-value" id="metric-total-active-devices">—</div>
+                            </div>
+                        </div>
+
+                        <div class="metric-card">
+                            <div class="metric-icon">
+                                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                    <rect x="3" y="4" width="18" height="18" rx="2" ry="2"/>
+                                    <line x1="16" y1="2" x2="16" y2="6"/>
+                                    <line x1="8" y1="2" x2="8" y2="6"/>
+                                    <line x1="3" y1="10" x2="21" y2="10"/>
+                                </svg>
+                            </div>
+                        <div class="metric-content">
+                            <div class="metric-label">Среднее бронирований на устройство за период</div>
+                            <div class="metric-value" id="metric-avg-bookings-devices">—</div>
+                        </div>
+                    </div>
+
+                        <div class="metric-card">
+                            <div class="metric-icon">
+                                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                    <path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z"/>
+                                </svg>
+                            </div>
+                            <div class="metric-content">
+                                <div class="metric-label">Самое популярное устройство</div>
+                                <div class="metric-value" id="metric-most-popular-device">—</div>
+                            </div>
+                        </div>
+
+                        <div class="metric-card">
+                            <div class="metric-icon">
+                                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                    <polyline points="22 12 18 12 15 21 9 3 6 12 2 12"/>
+                                </svg>
+                            </div>
+                            <div class="metric-content">
+                                <div class="metric-label">Всего бронирований</div>
+                                <div class="metric-value" id="metric-total-bookings-devices">—</div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Таблица активности устройств -->
+                    <div class="statistics-section">
+                        <h3>Детальная активность устройств</h3>
+                        <div class="statistics-table-container">
+                            <table class="statistics-table" id="activity-devices-table">
+                                <thead>
+                                    <tr>
+                                        <th data-sort="name" class="sortable">Устройство</th>
+                                        <th data-sort="bookings" class="sortable">Бронирований</th>
+                                        <th data-sort="percentage" class="sortable">Процент от общего</th>
+                                        <th>Популярные пользователи</th>
+                                        <th data-sort="lastActivity" class="sortable">Последняя активность</th>
+                                    </tr>
+                                </thead>
+                                <tbody id="activity-devices-tbody">
+                                    <!-- Будет заполнено динамически -->
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+
+                    <!-- График активности устройств -->
+                    <div class="statistics-section">
+                        <h3>График активности устройств (топ-8)</h3>
+                        <div class="chart-card" id="chart-activity-devices-wrapper">
+                            <canvas id="chart-activity-devices"></canvas>
+                        </div>
+                    </div>
+                </div>
+            </section>
+
+            <!-- Вкладка: Календарь занятости -->
+            <section id="calendar-section" class="tab-content hidden">
+                <div class="section-header">
+                    <h2>Календарь занятости</h2>
+                    <div class="calendar-controls gantt-controls">
+                        <button id="gantt-prev" class="icon-btn" title="Предыдущая неделя">
+                            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="16" height="16">
+                                <polyline points="15 18 9 12 15 6"/>
+                            </svg>
+                        </button>
+                        <span id="gantt-period" class="calendar-period-label">23 — 29 декабря 2025</span>
+                        <button id="gantt-next" class="icon-btn" title="Следующая неделя">
+                            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="16" height="16">
+                                <polyline points="9 18 15 12 9 6"/>
+                            </svg>
+                        </button>
+                    </div>
+                </div>
+                <div class="gantt-filters">
+                    <select id="gantt-os-filter" class="filter-select">
+                        <option value="all">Все ОС</option>
+                        <option value="android">Android</option>
+                        <option value="ios">iOS</option>
+                        <option value="ipados">iPadOS</option>
+                    </select>
+                    <div class="search-wrapper" id="gantt-search-wrapper">
+                        <input type="text" id="gantt-search" class="search-input" placeholder="Поиск устройства...">
+                    </div>
+                </div>
+                <div class="calendar-legend gantt-legend">
+                    <span class="legend-item"><span class="legend-color office"></span> Использую</span>
+                    <span class="legend-item"><span class="legend-color home"></span> Забрал домой</span>
+                    <span class="legend-item"><span class="legend-color free"></span> Свободно</span>
+                </div>
+                <div id="gantt-chart" class="gantt-chart">
+                    <!-- Gantt рендерится динамически -->
+                </div>
+            </section>
+
+            <!-- Вкладка: Чат -->
+            <section id="chat-section" class="tab-content">
+                <div class="chat-container">
+                    <div class="chat-header">
+                        <h2>Чат</h2>
+                        <div class="chat-header-actions">
+                            <div class="chat-search-wrapper">
+                                <input type="text" id="chat-search-input" class="chat-search-input" placeholder="Поиск..." autocomplete="off">
+                                <button id="chat-search-clear" class="chat-search-clear hidden" title="Очистить поиск">
+                                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="16" height="16">
+                                        <line x1="18" y1="6" x2="6" y2="18"/>
+                                        <line x1="6" y1="6" x2="18" y2="18"/>
+                                    </svg>
+                                </button>
+                                <div id="chat-search-results" class="chat-search-results hidden">
+                                    <span id="chat-search-count"></span>
+                                    <button id="chat-search-prev" class="chat-search-nav" title="Предыдущий">↑</button>
+                                    <button id="chat-search-next" class="chat-search-nav" title="Следующий">↓</button>
+                                </div>
+                            </div>
+                            <button id="chat-sound-toggle" class="icon-btn" title="Звук включен">
+                                <svg class="sound-on" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="20" height="20">
+                                    <polygon points="11 5 6 9 2 9 2 15 6 15 11 19 11 5"/>
+                                    <path d="M15.54 8.46a5 5 0 0 1 0 7.07"/>
+                                    <path d="M19.07 4.93a10 10 0 0 1 0 14.14"/>
+                                </svg>
+                                <svg class="sound-off hidden" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="20" height="20">
+                                    <polygon points="11 5 6 9 2 9 2 15 6 15 11 19 11 5"/>
+                                    <line x1="23" y1="9" x2="17" y2="15"/>
+                                    <line x1="17" y1="9" x2="23" y2="15"/>
+                                </svg>
+                            </button>
+                            <button id="chat-notification-toggle" class="icon-btn" title="Уведомления браузера">
+                                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="20" height="20">
+                                    <path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9"/>
+                                    <path d="M13.73 21a2 2 0 0 1-3.46 0"/>
+                                </svg>
+                            </button>
+                        </div>
+                    </div>
+                    <div id="chat-reaction-picker" class="chat-reaction-picker hidden"></div>
+                    <div id="chat-messages" class="chat-messages">
+                        <!-- Сообщения загружаются динамически -->
+                    </div>
+                    <div id="chat-empty" class="chat-empty hidden">
+                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" width="48" height="48">
+                            <path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/>
+                        </svg>
+                        <p>Пока нет сообщений</p>
+                        <span>Напишите первое сообщение!</span>
+                    </div>
+                    <div id="chat-typing-indicator" class="chat-typing-indicator hidden"></div>
+                    <div id="chat-reply-preview" class="chat-reply-preview hidden">
+                        <div class="chat-reply-content">
+                            <div class="chat-reply-author"></div>
+                            <div class="chat-reply-text"></div>
+                        </div>
+                        <button type="button" id="chat-reply-cancel" class="chat-reply-cancel" title="Отменить ответ">
+                            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="16" height="16">
+                                <line x1="18" y1="6" x2="6" y2="18"/>
+                                <line x1="6" y1="6" x2="18" y2="18"/>
+                            </svg>
+                        </button>
+                    </div>
+                    <form id="chat-form" class="chat-form">
+                        <div class="chat-input-wrapper">
+                            <textarea id="chat-input" class="chat-input" placeholder="Напишите сообщение..." autocomplete="off" maxlength="2000" rows="3"></textarea>
+                            <div id="chat-mention-dropdown" class="chat-mention-dropdown hidden"></div>
+                            <div id="chat-emoji-picker" class="chat-emoji-picker hidden">
+                                <div class="chat-emoji-categories">
+                                    <button class="chat-emoji-category active" data-category="smileys">😀</button>
+                                    <button class="chat-emoji-category" data-category="gestures">👋</button>
+                                    <button class="chat-emoji-category" data-category="objects">📱</button>
+                                    <button class="chat-emoji-category" data-category="symbols">✅</button>
+                                </div>
+                                <div id="chat-emoji-grid" class="chat-emoji-grid"></div>
+                            </div>
+                        </div>
+                        <button type="button" id="chat-emoji-btn" class="chat-emoji-btn" title="Эмодзи">
+                            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="20" height="20">
+                                <circle cx="12" cy="12" r="10"/>
+                                <path d="M8 14s1.5 2 4 2 4-2 4-2"/>
+                                <line x1="9" y1="9" x2="9.01" y2="9"/>
+                                <line x1="15" y1="9" x2="15.01" y2="9"/>
+                            </svg>
+                        </button>
+                        <button type="submit" class="chat-send-btn" title="Отправить">
+                            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="20" height="20">
+                                <line x1="22" y1="2" x2="11" y2="13"/>
+                                <polygon points="22 2 15 22 11 13 2 9 22 2"/>
+                            </svg>
+                        </button>
+                    </form>
+                </div>
+            </section>
+
+            <!-- Вкладка: Админ-панель -->
+            <section id="admin-section" class="tab-content">
+                <!-- Подвкладки админ-панели -->
+                <div class="admin-tabs">
+                    <button class="admin-tab active" data-admin-tab="devices">Устройства</button>
+                    <button class="admin-tab" data-admin-tab="users">Пользователи</button>
+                    <button class="admin-tab" data-admin-tab="projects">Проекты</button>
+                    <button class="admin-tab" data-admin-tab="statistics">Статистика</button>
+                    <button class="admin-tab" data-admin-tab="import">Импорт</button>
+                    <button class="admin-tab" data-admin-tab="reports">Отчеты</button>
+                    <button class="admin-tab" data-admin-tab="updates">Обновления</button>
+                    <button class="admin-tab" data-admin-tab="features">Фичи</button>
+                </div>
+
+                <!-- Подвкладка: Устройства -->
+                <div id="admin-devices-tab" class="admin-tab-content active">
+                    <div class="section-header">
+                        <h2>Управление устройствами</h2>
+                        <div class="section-header-actions">
+                            <div class="search-wrapper" id="admin-devices-search-wrapper">
+                                <input type="text" id="admin-devices-search" class="search-input" placeholder="Поиск по устройствам...">
+                                <button type="button" class="search-clear" id="admin-devices-search-clear" title="Очистить">
+                                    <svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="2">
+                                        <line x1="18" y1="6" x2="6" y2="18"></line>
+                                        <line x1="6" y1="6" x2="18" y2="18"></line>
+                                    </svg>
+                                </button>
+                            </div>
+                            <div class="filters-dropdown-wrapper">
+                                <button id="toggle-columns-btn" class="filter-btn filters-toggle" title="Колонки">
+                                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="16" height="16">
+                                        <rect x="3" y="3" width="7" height="7"/>
+                                        <rect x="14" y="3" width="7" height="7"/>
+                                        <rect x="14" y="14" width="7" height="7"/>
+                                        <rect x="3" y="14" width="7" height="7"/>
+                                    </svg>
+                                    <span>Колонки</span>
+                                </button>
+                                <!-- Выпадающий список колонок -->
+                                <div id="columns-panel" class="filters-dropdown hidden">
+                                    <div class="filters-dropdown-header">
+                                        <span>Отображаемые колонки</span>
+                                    </div>
+                                    <div id="columns-checkboxes" class="filters-section" style="border-bottom: none;">
+                                        <!-- Чекбоксы будут добавлены динамически -->
+                                    </div>
+                                </div>
+                            </div>
+                            <button id="add-device-btn" class="primary-btn">
+                                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                    <line x1="12" y1="5" x2="12" y2="19"/>
+                                    <line x1="5" y1="12" x2="19" y2="12"/>
+                                </svg>
+                                <span>Добавить устройство</span>
+                            </button>
+                        </div>
+                    </div>
+                    
+                    <div class="admin-view-tabs">
+                        <button class="admin-view-tab active" data-admin-view="devices-management">Управление</button>
+                        <button class="admin-view-tab" data-admin-view="devices-analysis">Анализ</button>
+                    </div>
+
+                    <div id="devices-management" class="admin-view-tab-content active">
+                        <!-- Табы iOS/Android -->
+                        <div class="os-tabs">
+                            <button class="os-tab active" data-os="android">Android</button>
+                            <button class="os-tab" data-os="ios">iOS</button>
+                        </div>
+                        
+                        <!-- Таблица устройств -->
+                        <div class="admin-devices-table-wrapper">
+                            <table id="admin-devices-table" class="admin-devices-table">
+                                <thead id="admin-devices-thead">
+                                    <!-- Заголовки будут добавлены динамически -->
+                                </thead>
+                                <tbody id="admin-devices-tbody">
+                                    <!-- Строки будут добавлены динамически -->
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+
+                    <div id="devices-analysis" class="admin-view-tab-content">
+                        <div class="statistics-section">
+                            <h3>Анализ устройств</h3>
+
+                            <div class="device-analysis-tabs">
+                                <button class="device-analysis-tab active" data-device-tab="unused">Неиспользуемые устройства</button>
+                                <button class="device-analysis-tab" data-device-tab="overdue">Просроченные возвраты</button>
+                                <button class="device-analysis-tab" data-device-tab="turnover">Оборачиваемость</button>
+                                <button class="device-analysis-tab" data-device-tab="broken">Сломанные</button>
+                            </div>
+
+                            <div id="device-analysis-unused" class="device-analysis-tab-content active">
+                                <div class="statistics-section">
+                                    <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: var(--spacing-md);">
+                                        <h3 style="margin: 0;">Неиспользуемые устройства</h3>
+                                        <div style="display: flex; gap: var(--spacing-sm); align-items: center;">
+                                            <input
+                                                type="text"
+                                                id="unused-devices-search"
+                                                placeholder="Поиск по названию..."
+                                                class="search-input"
+                                                style="width: 250px; padding: 8px 12px; border: 1px solid var(--border-color); border-radius: 6px; background: var(--bg-secondary); color: var(--text-primary);"
+                                            />
+                                        </div>
+                                    </div>
+                                    <div id="unused-devices-list" class="devices-analysis-list">
+                                        <!-- Будет заполнено динамически -->
+                                    </div>
+                                    <div id="unused-devices-pagination" class="pagination-controls" style="display: none;">
+                                        <button id="unused-devices-prev" class="secondary-btn">← Назад</button>
+                                        <span id="unused-devices-page-info" class="pagination-info"></span>
+                                        <button id="unused-devices-next" class="secondary-btn">Вперед →</button>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <div id="device-analysis-overdue" class="device-analysis-tab-content">
+                                <div class="statistics-section">
+                                    <h3>Устройства с просроченными возвратами</h3>
+                                    <div id="overdue-devices-list" class="devices-analysis-list">
+                                        <!-- Будет заполнено динамически -->
+                                    </div>
+                                </div>
+                            </div>
+
+                            <div id="device-analysis-turnover" class="device-analysis-tab-content">
+                                <div class="statistics-section">
+                                    <h3>Коэффициент оборачиваемости устройств</h3>
+                                    <div class="statistics-table-container">
+                                        <table class="statistics-table">
+                                            <thead>
+                                                <tr>
+                                                    <th>Устройство</th>
+                                                    <th>ОС</th>
+                                                    <th>Бронирований</th>
+                                                    <th>Среднее время между бронированиями</th>
+                                                </tr>
+                                            </thead>
+                                            <tbody id="device-turnover-tbody">
+                                                <!-- Будет заполнено динамически -->
+                                            </tbody>
+                                        </table>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <div id="device-analysis-broken" class="device-analysis-tab-content">
+                                <div class="statistics-section">
+                                    <h3>Сломанные устройства</h3>
+                                    <div id="broken-devices-grid" class="devices-grid">
+                                        <!-- Будет заполнено динамически -->
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Подвкладка: Пользователи -->
+                <div id="admin-users-tab" class="admin-tab-content">
+                    <div class="section-header">
+                        <h2>Пользователи системы</h2>
+                        <div class="section-header-actions">
+                            <div class="search-wrapper" id="admin-users-search-wrapper">
+                                <input type="text" id="admin-users-search" class="search-input" placeholder="Поиск по имени или email...">
+                                <button type="button" class="search-clear" id="admin-users-search-clear" title="Очистить">
+                                    <svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="2">
+                                        <line x1="18" y1="6" x2="6" y2="18"></line>
+                                        <line x1="6" y1="6" x2="18" y2="18"></line>
+                                    </svg>
+                                </button>
+                            </div>
+                            <span id="users-count" class="users-count"></span>
+                        </div>
+                    </div>
+                    <div class="admin-view-tabs">
+                        <button class="admin-view-tab active" data-admin-view="users-management">Управление</button>
+                        <button class="admin-view-tab" data-admin-view="users-analysis">Анализ</button>
+                    </div>
+
+                    <div id="users-management" class="admin-view-tab-content active">
+                        <div id="admin-users-list" class="admin-users-list">
+                            <!-- Список пользователей -->
+                        </div>
+                    </div>
+
+                    <div id="users-analysis" class="admin-view-tab-content">
+                        <div class="statistics-section">
+                            <h3>Анализ пользователей</h3>
+
+                            <div class="user-analysis-tabs">
+                                <button class="user-analysis-tab active" data-user-tab="new">Новые пользователи</button>
+                                <button class="user-analysis-tab" data-user-tab="debtors">Должники</button>
+                            </div>
+
+                            <div id="user-analysis-new" class="user-analysis-tab-content active">
+                                <div class="statistics-top-section">
+                                    <div class="statistics-top-card">
+                                        <h3>Первые подключения пользователей</h3>
+                                        <div id="new-users-list" class="top-list">
+                                            <!-- Будет заполнено динамически -->
+                                        </div>
+                                    </div>
+
+                                    <div class="statistics-top-card">
+                                        <h3>Неактивные пользователи</h3>
+                                        <div id="inactive-users-list" class="top-list">
+                                            <!-- Будет заполнено динамически -->
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <div id="user-analysis-debtors" class="user-analysis-tab-content">
+                                <div class="statistics-section">
+                                    <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: var(--spacing-md);">
+                                        <h3 style="margin: 0;">Должники</h3>
+                                        <div style="display: flex; gap: var(--spacing-sm); align-items: center;">
+                                            <input
+                                                type="text"
+                                                id="debtors-search"
+                                                placeholder="Поиск по имени или устройству..."
+                                                class="search-input"
+                                                style="width: 300px; padding: 8px 12px; border: 1px solid var(--border-color); border-radius: 6px; background: var(--bg-secondary); color: var(--text-primary);"
+                                            />
+                                        </div>
+                                    </div>
+                                    <div id="debtors-grid" class="devices-grid">
+                                        <!-- Будет заполнено динамически -->
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <div id="admin-projects-tab" class="admin-tab-content">
+                    <div class="section-header">
+                        <h2>Проекты</h2>
+                        <div class="section-header-actions">
+                            <button id="project-create-btn" class="primary-btn">
+                                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                    <line x1="12" y1="5" x2="12" y2="19"/>
+                                    <line x1="5" y1="12" x2="19" y2="12"/>
+                                </svg>
+                                <span>Новый проект</span>
+                            </button>
+                        </div>
+                    </div>
+                    <div id="admin-projects-list" class="projects-list projects-grid"></div>
+                </div>
+
+                <!-- Подвкладка: Статистика -->
+                <div id="admin-statistics-tab" class="admin-tab-content">
+                    <div class="section-header">
+                        <h2>Статистика использования</h2>
+                        <div class="statistics-period-filter">
+                            <select id="statistics-period" class="filter-select">
+                                <option value="7">Последние 7 дней</option>
+                                <option value="30" selected>Последние 30 дней</option>
+                                <option value="90">Последние 90 дней</option>
+                                <option value="all">Все время</option>
+                            </select>
+                        </div>
+                    </div>
+
+                    <!-- Вкладки статистики -->
+                    <div class="statistics-tabs">
+                        <button class="statistics-tab active" data-statistics-tab="overview">Обзор</button>
+                        <button class="statistics-tab" data-statistics-tab="temporal">Временные паттерны</button>
+                        <button class="statistics-tab" data-statistics-tab="distributions">Распределения</button>
+                    </div>
+
+                    <!-- Вкладка: Обзор -->
+                    <div id="statistics-overview-tab" class="statistics-tab-content active">
+                    <!-- Карточки метрик -->
+                    <div class="statistics-metrics">
+                        <div class="metric-card">
+                            <div class="metric-icon">
+                                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                    <rect x="5" y="2" width="14" height="20" rx="2"/>
+                                    <circle cx="12" cy="18" r="1"/>
+                                </svg>
+                            </div>
+                            <div class="metric-content">
+                                <div class="metric-label">Процент занятости</div>
+                                <div class="metric-value" id="metric-occupancy">—</div>
+                            </div>
+                        </div>
+                        
+                        <div class="metric-card">
+                            <div class="metric-icon">
+                                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                    <circle cx="12" cy="12" r="10"/>
+                                    <polyline points="12 6 12 12 16 14"/>
+                                </svg>
+                            </div>
+                            <div class="metric-content">
+                                <div class="metric-label">Среднее время использования</div>
+                                <div class="metric-value" id="metric-avg-time">—</div>
+                            </div>
+                        </div>
+                        
+                        <div class="metric-card">
+                            <div class="metric-icon">
+                                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                    <path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/>
+                                    <circle cx="9" cy="7" r="4"/>
+                                    <path d="M23 21v-2a4 4 0 0 0-3-3.87"/>
+                                    <path d="M16 3.13a4 4 0 0 1 0 7.75"/>
+                                </svg>
+                            </div>
+                            <div class="metric-content">
+                                <div class="metric-label">Всего бронирований</div>
+                                <div class="metric-value" id="metric-total-bookings">—</div>
+                            </div>
+                        </div>
+
+                        <div class="metric-card">
+                            <div class="metric-icon">
+                                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                    <path d="M12 2v20M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6"/>
+                                </svg>
+                            </div>
+                            <div class="metric-content">
+                                <div class="metric-label">Просроченные возвраты</div>
+                                <div class="metric-value" id="metric-overdue">—</div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Топ устройства и ОС -->
+                    <div class="statistics-top-section">
+                        <div class="statistics-top-card">
+                            <h3>Самые популярные устройства</h3>
+                            <div id="top-devices-list" class="top-list">
+                                <!-- Будет заполнено динамически -->
+                            </div>
+                        </div>
+                        
+                        <div class="statistics-top-card">
+                            <h3>Самые популярные ОС</h3>
+                            <div id="top-os-list" class="top-list">
+                                <!-- Будет заполнено динамически -->
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Топ пользователей -->
+                    <div class="statistics-top-section">
+                        <div class="statistics-top-card full-width">
+                            <h3>Топ пользователей</h3>
+                            <div id="top-users-list" class="top-users-list">
+                                <!-- Будет заполнено динамически -->
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Графики -->
+                    <div class="statistics-charts">
+                        <div class="chart-card">
+                            <h3>Бронирования по дням</h3>
+                            <canvas id="chart-bookings-by-day"></canvas>
+                        </div>
+                        
+                        <div class="chart-card">
+                            <h3>Распределение по ОС</h3>
+                            <canvas id="chart-os-distribution"></canvas>
+                        </div>
+                        
+                        <div class="chart-card">
+                            <h3>Занятость парка по дням</h3>
+                            <canvas id="chart-occupancy-by-day"></canvas>
+                        </div>
+                    </div>
+                    </div>
+
+                    <!-- Вкладка: Временные паттерны -->
+                    <div id="statistics-temporal-tab" class="statistics-tab-content">
+                        <div class="statistics-charts">
+                            <div class="chart-card">
+                                <h3>Активность по дням недели</h3>
+                                <canvas id="chart-weekday-activity"></canvas>
+                            </div>
+                            
+                            <div class="chart-card">
+                                <h3>Активность по часам дня</h3>
+                                <canvas id="chart-hourly-activity"></canvas>
+                            </div>
+                            
+                            <div class="chart-card">
+                                <h3>Тренд занятости</h3>
+                                <canvas id="chart-occupancy-trend"></canvas>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Вкладка: Распределения -->
+                    <div id="statistics-distributions-tab" class="statistics-tab-content">
+                        <div class="statistics-charts">
+                            <div class="chart-card">
+                                <h3>Распределение по типам бронирований</h3>
+                                <canvas id="chart-booking-types"></canvas>
+                            </div>
+                            
+                            <div class="chart-card">
+                                <h3>Динамика типов бронирований</h3>
+                                <canvas id="chart-booking-types-trend"></canvas>
+                            </div>
+                            
+                            <div class="chart-card">
+                                <h3>Распределение по версиям ОС</h3>
+                                <canvas id="chart-os-versions"></canvas>
+                            </div>
+                            
+                            <div class="chart-card">
+                                <h3>Распределение по типам устройств</h3>
+                                <canvas id="chart-device-types"></canvas>
+                            </div>
+                            
+                            <div class="chart-card chart-card-wide">
+                                <h3>Топ версий ОС</h3>
+                                <canvas id="chart-top-os-versions"></canvas>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Подвкладка: Импорт -->
+                <div id="admin-import-tab" class="admin-tab-content">
+                    <div class="section-header">
+                        <h2>Импорт устройств из Google Sheets</h2>
+                    </div>
+                    
+                    <div class="import-container">
+                        <div class="import-instructions">
+                            <h4>Инструкция:</h4>
+                            <ol>
+                                <li>Откройте Google Sheets с устройствами</li>
+                                <li>Выделите данные <strong>без заголовков</strong></li>
+                                <li>Скопируйте (Ctrl+C / Cmd+C)</li>
+                                <li>Выберите тип листа ниже</li>
+                                <li>Вставьте данные в поле (Ctrl+V / Cmd+V)</li>
+                            </ol>
+                        </div>
+
+                        <div class="import-form">
+                            <div class="form-row">
+                                <div class="form-group">
+                                    <label for="import-sheet-type">Тип листа</label>
+                                    <select id="import-sheet-type" class="form-input">
+                                        <option value="android">Android (телефоны)</option>
+                                        <option value="android-tablets">Android (планшеты)</option>
+                                        <option value="ios">iOS (телефоны)</option>
+                                        <option value="ipados">iPadOS (планшеты)</option>
+                                    </select>
+                                </div>
+                                <div class="form-group">
+                                    <label for="import-mode">Режим импорта</label>
+                                    <select id="import-mode" class="form-input">
+                                        <option value="upsert">Обновить/добавить (по серийному номеру)</option>
+                                        <option value="replace">Полная замена (удалить все и добавить)</option>
+                                    </select>
+                                </div>
+                            </div>
+
+                            <div class="form-group">
+                                <label for="import-data">Данные из таблицы</label>
+                                <textarea id="import-data" class="form-input import-textarea" placeholder="Вставьте сюда данные из Google Sheets..."></textarea>
+                            </div>
+
+                            <div class="import-actions">
+                                <button type="button" id="import-preview-btn" class="secondary-btn">
+                                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="16" height="16">
+                                        <path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/>
+                                        <circle cx="12" cy="12" r="3"/>
+                                    </svg>
+                                    Предпросмотр
+                                </button>
+                                <button type="button" id="import-execute-btn" class="primary-btn" disabled>
+                                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="16" height="16">
+                                        <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/>
+                                        <polyline points="7 10 12 15 17 10"/>
+                                        <line x1="12" y1="15" x2="12" y2="3"/>
+                                    </svg>
+                                    Импортировать
+                                </button>
+                            </div>
+                        </div>
+
+                        <!-- Превью результатов парсинга -->
+                        <div id="import-preview" class="import-preview hidden">
+                            <div class="import-preview-header">
+                                <h4>Предпросмотр: <span id="import-preview-count">0</span> устройств</h4>
+                                <button type="button" id="import-preview-close" class="icon-btn" title="Закрыть">
+                                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="16" height="16">
+                                        <line x1="18" y1="6" x2="6" y2="18"></line>
+                                        <line x1="6" y1="6" x2="18" y2="18"></line>
+                                    </svg>
+                                </button>
+                            </div>
+                            <div class="import-preview-table-wrapper">
+                                <table class="import-preview-table">
+                                    <thead id="import-preview-thead">
+                                        <!-- Заголовки -->
+                                    </thead>
+                                    <tbody id="import-preview-tbody">
+                                        <!-- Данные -->
+                                    </tbody>
+                                </table>
+                            </div>
+                        </div>
+
+                        <!-- Результаты импорта -->
+                        <div id="import-results" class="import-results hidden">
+                            <div class="import-results-header">
+                                <h4>Результаты импорта</h4>
+                            </div>
+                            <div id="import-results-content" class="import-results-content">
+                                <!-- Результаты -->
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Подвкладка: Отчеты -->
+                <div id="admin-reports-tab" class="admin-tab-content">
+                    <div class="section-header">
+                        <h2>Экспорт данных и отчеты</h2>
+                        <p class="section-description">
+                            Экспортируйте данные в различных форматах для анализа и отчетности
+                        </p>
+                    </div>
+
+                    <!-- CSV Экспорт -->
+                    <div class="export-section">
+                        <h3>Экспорт в CSV</h3>
+                        <p class="export-description">
+                            Экспортируйте данные в формате CSV для работы в Excel, Google Sheets и других табличных редакторах
+                        </p>
+                        <div class="export-buttons-grid">
+                            <div class="export-card">
+                                <div class="export-card-header">
+                                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="24" height="24">
+                                        <circle cx="12" cy="12" r="10"/>
+                                        <polyline points="12 6 12 12 16 14"/>
+                                    </svg>
+                                    <h4>История бронирований</h4>
+                                </div>
+                                <p class="export-card-description">
+                                    Все записи истории бронирований с датами, пользователями и действиями
+                                </p>
+                                <button id="export-history-csv-btn" class="export-btn">
+                                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="16" height="16">
+                                        <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/>
+                                        <polyline points="7 10 12 15 17 10"/>
+                                        <line x1="12" y1="15" x2="12" y2="3"/>
+                                    </svg>
+                                    Экспорт CSV
+                                </button>
+                            </div>
+
+                            <div class="export-card">
+                                <div class="export-card-header">
+                                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="24" height="24">
+                                        <rect x="5" y="2" width="14" height="20" rx="2"/>
+                                        <circle cx="12" cy="18" r="1"/>
+                                    </svg>
+                                    <h4>Список устройств</h4>
+                                </div>
+                                <p class="export-card-description">
+                                    Полный список всех устройств с техническими характеристиками и статусами
+                                </p>
+                                <button id="export-devices-csv-btn" class="export-btn">
+                                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="16" height="16">
+                                        <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/>
+                                        <polyline points="7 10 12 15 17 10"/>
+                                        <line x1="12" y1="15" x2="12" y2="3"/>
+                                    </svg>
+                                    Экспорт CSV
+                                </button>
+                            </div>
+
+                            <div class="export-card">
+                                <div class="export-card-header">
+                                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="24" height="24">
+                                        <path d="M3 3v18h18"/>
+                                        <path d="M18 7l-5 5-5-5"/>
+                                    </svg>
+                                    <h4>Статистика использования</h4>
+                                </div>
+                                <p class="export-card-description">
+                                    Статистика по использованию устройств и активности пользователей
+                                </p>
+                                <button id="export-statistics-csv-btn" class="export-btn">
+                                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="16" height="16">
+                                        <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/>
+                                        <polyline points="7 10 12 15 17 10"/>
+                                        <line x1="12" y1="15" x2="12" y2="3"/>
+                                    </svg>
+                                    Экспорт CSV
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Готовые отчеты -->
+                    <div class="export-section">
+                        <h3>Готовые отчеты</h3>
+                        <p class="export-description">
+                            Готовые отчеты в формате CSV для анализа и документооборота
+                        </p>
+                        <div class="export-buttons-grid">
+                            <div class="export-card">
+                                <div class="export-card-header">
+                                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="24" height="24">
+                                        <rect x="3" y="4" width="18" height="18" rx="2" ry="2"/>
+                                        <line x1="16" y1="2" x2="16" y2="6"/>
+                                        <line x1="8" y1="2" x2="8" y2="6"/>
+                                        <line x1="3" y1="10" x2="21" y2="10"/>
+                                    </svg>
+                                    <h4>Ежемесячный отчет</h4>
+                                </div>
+                                <p class="export-card-description">
+                                    Отчет по использованию устройств за текущий месяц с общей статистикой и топ-устройствами
+                                </p>
+                                <button id="export-monthly-csv-btn" class="export-btn">
+                                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="16" height="16">
+                                        <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/>
+                                        <polyline points="7 10 12 15 17 10"/>
+                                        <line x1="12" y1="15" x2="12" y2="3"/>
+                                    </svg>
+                                    Экспорт CSV
+                                </button>
+                            </div>
+
+                            <div class="export-card">
+                                <div class="export-card-header">
+                                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="24" height="24">
+                                        <path d="M10.29 3.86L1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"/>
+                                        <line x1="12" y1="9" x2="12" y2="13"/>
+                                        <line x1="12" y1="17" x2="12.01" y2="17"/>
+                                    </svg>
+                                    <h4>Отчет по нерабочим</h4>
+                                </div>
+                                <p class="export-card-description">
+                                    Отдельный отчет со списком устройств со статусом "Не работает"
+                                </p>
+                                <button id="export-broken-csv-btn" class="export-btn">
+                                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="16" height="16">
+                                        <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/>
+                                        <polyline points="7 10 12 15 17 10"/>
+                                        <line x1="12" y1="15" x2="12" y2="3"/>
+                                    </svg>
+                                    Экспорт CSV
+                                </button>
+                            </div>
+
+                            <div class="export-card">
+                                <div class="export-card-header">
+                                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="24" height="24">
+                                        <path d="M10.29 3.86L1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"/>
+                                        <line x1="12" y1="9" x2="12" y2="13"/>
+                                        <line x1="12" y1="17" x2="12.01" y2="17"/>
+                                    </svg>
+                                    <h4>Отчет по просроченным</h4>
+                                </div>
+                                <p class="export-card-description">
+                                    Отдельный отчет по устройствам с просроченным возвратом (более 1 дня)
+                                </p>
+                                <button id="export-overdue-csv-btn" class="export-btn">
+                                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="16" height="16">
+                                        <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/>
+                                        <polyline points="7 10 12 15 17 10"/>
+                                        <line x1="12" y1="15" x2="12" y2="3"/>
+                                    </svg>
+                                    Экспорт CSV
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Подвкладка: Обновления (Force Update) -->
+                <div id="admin-updates-tab" class="admin-tab-content">
+                    <div class="section-header">
+                        <h2>Управление обновлениями</h2>
+                    </div>
+                    
+                    <div class="force-update-admin-container">
+                        <!-- Карточка текущего состояния -->
+                        <div class="force-update-status-card">
+                            <div class="status-card-header">
+                                <div class="status-card-icon" id="force-update-status-icon">
+                                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                        <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/>
+                                        <polyline points="7 10 12 15 17 10"/>
+                                        <line x1="12" y1="15" x2="12" y2="3"/>
+                                    </svg>
+                                </div>
+                                <div class="status-card-info">
+                                    <h3>Force Update</h3>
+                                    <p id="force-update-status-text">Загрузка...</p>
+                                </div>
+                                <div class="status-card-badge" id="force-update-status-badge">
+                                    <span class="status-dot"></span>
+                                    <span class="status-label">—</span>
+                                </div>
+                            </div>
+                            <div class="status-card-meta">
+                                <div class="meta-item">
+                                    <span class="meta-label">Текущая версия приложения:</span>
+                                    <span class="meta-value version" id="admin-current-version">—</span>
+                                </div>
+                                <div class="meta-item">
+                                    <span class="meta-label">Минимальная требуемая версия:</span>
+                                    <span class="meta-value" id="admin-min-version">—</span>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Форма настроек -->
+                        <div class="force-update-settings-card">
+                            <h3>Настройки Force Update</h3>
+                            <p class="settings-description">
+                                Когда Force Update включен, пользователи с версией ниже минимальной увидят модальное окно с требованием обновить приложение.
+                            </p>
+                            
+                            <form id="force-update-form" class="force-update-form">
+                                <div class="form-group">
+                                    <div class="force-update-toggle-row">
+                                        <label class="admin-toggle">
+                                            <input type="checkbox" id="admin-force-update-enabled" class="admin-toggle-input">
+                                            <span class="admin-toggle-slider green"></span>
+                                            <span class="admin-toggle-label green">Force Update</span>
+                                        </label>
+                                    </div>
+                                </div>
+                                
+                                <div class="form-group">
+                                    <label for="admin-min-version-input">Минимальная версия</label>
+                                    <input type="text" id="admin-min-version-input" class="form-input" 
+                                           placeholder="1.15.0" pattern="^\d+\.\d+\.\d+$"
+                                           title="Формат версии: X.Y.Z (например, 1.15.0)">
+                                    <p class="form-hint">Формат: X.Y.Z (например, 1.15.0). Пользователи с более старой версией будут вынуждены обновиться.</p>
+                                </div>
+                                
+                                <div class="form-group">
+                                    <label for="admin-update-message">Сообщение для пользователей</label>
+                                    <textarea id="admin-update-message" class="form-input" rows="3"
+                                              placeholder="Доступна новая версия приложения с важными обновлениями."></textarea>
+                                    <p class="form-hint">Это сообщение увидят пользователи в модальном окне обновления.</p>
+                                </div>
+                                
+                                <div class="form-actions">
+                                    <button type="button" id="force-update-reset-btn" class="secondary-btn">
+                                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="16" height="16">
+                                            <path d="M3 12a9 9 0 1 0 9-9 9.75 9.75 0 0 0-6.74 2.74L3 8"/>
+                                            <path d="M3 3v5h5"/>
+                                        </svg>
+                                        Сбросить
+                                    </button>
+                                    <button type="submit" class="primary-btn">
+                                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="16" height="16">
+                                            <path d="M19 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11l5 5v11a2 2 0 0 1-2 2z"/>
+                                            <polyline points="17 21 17 13 7 13 7 21"/>
+                                            <polyline points="7 3 7 8 15 8"/>
+                                        </svg>
+                                        Сохранить
+                                    </button>
+                                </div>
+                            </form>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Подвкладка: Фичи (Feature Flags) -->
+                <div id="admin-features-tab" class="admin-tab-content">
+                    <div class="section-header">
+                        <h2>Управление фичами</h2>
+                    </div>
+                    <p class="features-description">
+                        Включение и отключение функций приложения. Изменения применяются мгновенно для всех пользователей.
+                    </p>
+                    <div class="features-container">
+                        <!-- Группа: Устройства -->
+                        <div class="feature-group">
+                            <h3 class="feature-group-title">Устройства</h3>
+                            <div class="feature-group-content">
+                                <div class="feature-card">
+                                    <div class="feature-info">
+                                        <h4>Автоопределение устройства</h4>
+                                        <p>Автоматическое определение модели устройства при открытии приложения с мобильного</p>
+                                    </div>
+                                    <label class="admin-toggle">
+                                        <input type="checkbox" id="feature-device-detection" class="admin-toggle-input" checked>
+                                        <span class="admin-toggle-slider green"></span>
+                                    </label>
+                                </div>
+                                <div class="feature-card">
+                                    <div class="feature-info">
+                                        <h4>Подбор похожих устройств</h4>
+                                        <p>Поиск устройств по характеристикам клиентского девайса с оценкой совместимости</p>
+                                    </div>
+                                    <label class="admin-toggle">
+                                        <input type="checkbox" id="feature-device-matcher" class="admin-toggle-input" checked>
+                                        <span class="admin-toggle-slider green"></span>
+                                    </label>
+                                </div>
+                                <div class="feature-card">
+                                    <div class="feature-info">
+                                        <h4>Подсказки в каталоге устройств</h4>
+                                        <p>Подсветка популярных и редко используемых eligible устройств на вкладке «Устройства»</p>
+                                    </div>
+                                    <label class="admin-toggle">
+                                        <input type="checkbox" id="feature-device-activity-prompts" class="admin-toggle-input" checked>
+                                        <span class="admin-toggle-slider green"></span>
+                                    </label>
+                                </div>
+                                <div class="feature-card">
+                                    <div class="feature-info">
+                                        <h4>Проекты и матрица покрытия</h4>
+                                        <p>Проекты, привязка пользователей, проектный контекст в бронировании и матрица покрытия устройств</p>
+                                    </div>
+                                    <label class="admin-toggle">
+                                        <input type="checkbox" id="feature-project-context" class="admin-toggle-input" checked>
+                                        <span class="admin-toggle-slider green"></span>
+                                    </label>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Группа: Бронирование -->
+                        <div class="feature-group">
+                            <h3 class="feature-group-title">Бронирование</h3>
+                            <div class="feature-group-content">
+                                <div class="feature-card">
+                                    <div class="feature-info">
+                                        <h4>Календарь занятости</h4>
+                                        <p>Отображение вкладки «Календарь» и кнопок календаря на карточках устройств</p>
+                                    </div>
+                                    <label class="admin-toggle">
+                                        <input type="checkbox" id="feature-calendar" class="admin-toggle-input" checked>
+                                        <span class="admin-toggle-slider green"></span>
+                                    </label>
+                                </div>
+                                <div class="feature-card">
+                                    <div class="feature-info">
+                                        <h4>Бронирование на других пользователей</h4>
+                                        <p>Возможность бронировать устройства на других сотрудников с подтверждением получения</p>
+                                    </div>
+                                    <label class="admin-toggle">
+                                        <input type="checkbox" id="feature-book-for-others" class="admin-toggle-input" checked>
+                                        <span class="admin-toggle-slider green"></span>
+                                    </label>
+                                </div>
+                                <div class="feature-card">
+                                    <div class="feature-info">
+                                        <h4>Занятые устройства</h4>
+                                        <p>Вкладка "Занятые устройства" в истории бронирований для просмотра устройств у сотрудников</p>
+                                    </div>
+                                    <label class="admin-toggle">
+                                        <input type="checkbox" id="feature-occupied-devices" class="admin-toggle-input" checked>
+                                        <span class="admin-toggle-slider green"></span>
+                                    </label>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Группа: Отчеты -->
+                        <div class="feature-group">
+                            <h3 class="feature-group-title">Отчеты</h3>
+                            <div class="feature-group-content">
+                                <div class="feature-card">
+                                    <div class="feature-info">
+                                        <h4>Отчеты и экспорт данных</h4>
+                                        <p>Вкладка "Отчеты" в админ-панели для экспорта данных в CSV</p>
+                                    </div>
+                                    <label class="admin-toggle">
+                                        <input type="checkbox" id="feature-reports" class="admin-toggle-input" checked>
+                                        <span class="admin-toggle-slider green"></span>
+                                    </label>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Группа: Коммуникации -->
+                        <div class="feature-group">
+                            <h3 class="feature-group-title">Коммуникации</h3>
+                            <div class="feature-group-content">
+                                <div class="feature-card">
+                                    <div class="feature-info">
+                                        <h4>Чат</h4>
+                                        <p>Общий чат для общения пользователей с уведомлениями о новых сообщениях</p>
+                                    </div>
+                                    <label class="admin-toggle">
+                                        <input type="checkbox" id="feature-chat" class="admin-toggle-input" checked>
+                                        <span class="admin-toggle-slider green"></span>
+                                    </label>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Группа: Активность -->
+                        <div class="feature-group">
+                            <h3 class="feature-group-title">Активность</h3>
+                            <div class="feature-group-content">
+                                <div class="feature-card">
+                                    <div class="feature-info">
+                                        <h4>Подсказки у профиля пользователя</h4>
+                                        <p>Бейдж места и popover с подсказками по активности рядом с профилем в шапке</p>
+                                    </div>
+                                    <label class="admin-toggle">
+                                        <input type="checkbox" id="feature-user-activity-rank" class="admin-toggle-input" checked>
+                                        <span class="admin-toggle-slider green"></span>
+                                    </label>
+                                </div>
+                                <div class="feature-card">
+                                    <div class="feature-info">
+                                        <h4>Pilot: точная обрезка текста</h4>
+                                        <p>Экспериментальный режим pretext для более точной обрезки текста в чате и подписях графиков</p>
+                                    </div>
+                                    <label class="admin-toggle">
+                                        <input type="checkbox" id="feature-pretext-text-layout-pilot" class="admin-toggle-input">
+                                        <span class="admin-toggle-slider green"></span>
+                                    </label>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </section>
+        </main>
+    </div>
+
+    <!-- Модальное окно: Забрать домой -->
+    <div id="booking-modal" class="modal hidden">
+        <div class="modal-overlay"></div>
+        <div class="modal-content">
+            <div class="modal-header">
+                <h3>Забрать домой</h3>
+                <button class="modal-close">&times;</button>
+            </div>
+            <div class="modal-body">
+                <div id="booking-device-info" class="booking-device-info">
+                    <!-- Информация об устройстве -->
+                </div>
+                <form id="booking-form" class="booking-form">
+                    <!-- Выбор пользователя (для админов или общего аккаунта) -->
+                    <div id="booking-user-select" class="form-group hidden">
+                        <label>Забрать для <span id="booking-user-required" class="hidden" style="color: var(--danger);">*</span></label>
+                        <div class="user-select-wrapper">
+                            <button type="button" id="booking-user-btn" class="user-select-btn">
+                                <span id="booking-user-label">Для себя</span>
+                                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="16" height="16">
+                                    <polyline points="6 9 12 15 18 9"/>
+                                </svg>
+                            </button>
+                            <input type="hidden" id="booking-user" value="">
+                            <div id="booking-user-dropdown" class="user-select-dropdown hidden">
+                                <div class="user-select-search">
+                                    <input type="text" id="booking-user-search" class="form-input" placeholder="Поиск пользователя...">
+                                </div>
+                                <div id="booking-user-list" class="user-select-list">
+                                    <!-- Пользователи будут добавлены динамически -->
+                                </div>
+                            </div>
+                        </div>
+                        <p id="booking-user-hint" class="form-hint hidden" style="margin-top: 8px; color: var(--text-secondary); font-size: 0.85rem;">
+                            Вы вошли под общим аккаунтом. Укажите, для кого забираете устройство.
+                        </p>
+                    </div>
+                    <div class="form-row">
+                        <div class="form-group" style="flex: 1;">
+                            <label for="end-date">Дата возврата</label>
+                            <input type="date" id="end-date" class="form-input">
+                        </div>
+                    </div>
+                    <div id="booking-project-select-group" class="form-group hidden">
+                        <label for="booking-project-select">Проекты <span id="booking-project-required" class="hidden" style="color: var(--danger);">*</span></label>
+                        <div id="booking-project-select" class="project-selection-list" role="group" aria-label="Выбор проектов"></div>
+                        <p id="booking-project-hint" class="form-hint hidden" style="margin-top: 8px; color: var(--text-secondary); font-size: 0.85rem;"></p>
+                    </div>
+                    <div class="form-actions">
+                        <button type="button" class="secondary-btn modal-cancel">Отмена</button>
+                        <button type="submit" class="primary-btn">Забрать</button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+
+    <!-- Модальное окно: Использую (для общего аккаунта с выбором пользователя) -->
+    <div id="take-user-modal" class="modal hidden">
+        <div class="modal-overlay"></div>
+        <div class="modal-content">
+            <div class="modal-header">
+                <h3>Использую</h3>
+                <button class="modal-close">&times;</button>
+            </div>
+            <div class="modal-body">
+                <div id="take-device-info" class="booking-device-info">
+                    <!-- Информация об устройстве -->
+                </div>
+                <form id="take-form" class="booking-form">
+                    <!-- Выбор пользователя (обязательно) -->
+                    <div id="take-user-select-group" class="form-group">
+                        <label>Кто будет использовать <span style="color: var(--danger);">*</span></label>
+                        <div class="user-select-wrapper">
+                            <button type="button" id="take-user-btn" class="user-select-btn">
+                                <span id="take-user-label">Выберите пользователя</span>
+                                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="16" height="16">
+                                    <polyline points="6 9 12 15 18 9"/>
+                                </svg>
+                            </button>
+                            <input type="hidden" id="take-user" value="">
+                            <div id="take-user-dropdown" class="user-select-dropdown hidden">
+                                <div class="user-select-search">
+                                    <input type="text" id="take-user-search" class="form-input" placeholder="Поиск пользователя...">
+                                </div>
+                                <div id="take-user-list" class="user-select-list">
+                                    <!-- Пользователи будут добавлены динамически -->
+                                </div>
+                            </div>
+                        </div>
+                        <p class="form-hint" style="margin-top: 8px; color: var(--text-secondary); font-size: 0.85rem;">
+                            Вы вошли под общим аккаунтом. Укажите, кто будет использовать устройство.
+                        </p>
+                    </div>
+                    <div id="take-project-select-group" class="form-group hidden">
+                        <label for="take-project-select">Проекты <span id="take-project-required" class="hidden" style="color: var(--danger);">*</span></label>
+                        <div id="take-project-select" class="project-selection-list" role="group" aria-label="Выбор проектов"></div>
+                        <p id="take-project-hint" class="form-hint hidden" style="margin-top: 8px; color: var(--text-secondary); font-size: 0.85rem;"></p>
+                    </div>
+                    <div class="form-actions">
+                        <button type="button" class="secondary-btn modal-cancel">Отмена</button>
+                        <button type="submit" class="primary-btn">Взять</button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+
+    <!-- Модальное окно: Изменить дату -->
+    <div id="edit-date-modal" class="modal hidden">
+        <div class="modal-overlay"></div>
+        <div class="modal-content">
+            <div class="modal-header">
+                <h3>Изменить дату возврата</h3>
+                <button class="modal-close">&times;</button>
+            </div>
+            <div class="modal-body">
+                <div id="edit-date-device-info" class="booking-device-info">
+                    <!-- Информация об устройстве -->
+                </div>
+                <form id="edit-date-form">
+                    <div class="form-group">
+                        <label for="new-end-date">Дата возврата</label>
+                        <input type="date" id="new-end-date" class="form-input" required>
+                    </div>
+                    <div class="form-actions">
+                        <button type="button" class="secondary-btn modal-cancel">Отмена</button>
+                        <button type="submit" class="primary-btn">Сохранить</button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+
+    <!-- Модальное окно: Профиль пользователя -->
+    <div id="profile-modal" class="modal hidden">
+        <div class="modal-overlay"></div>
+        <div class="modal-content modal-sm">
+            <div class="modal-header">
+                <h3>Мой профиль</h3>
+                <button class="modal-close">&times;</button>
+            </div>
+            <div class="modal-body">
+                <div class="profile-header">
+                    <img id="profile-avatar" src="" alt="" class="profile-avatar">
+                    <div class="profile-info">
+                        <div class="profile-name-row">
+                            <h4 id="profile-name"></h4>
+                        </div>
+                        <span id="profile-email" class="profile-email"></span>
+                    </div>
+                </div>
+                <form id="profile-form">
+                    <div class="form-group">
+                        <label for="profile-office">Кабинет в офисе</label>
+                        <input type="text" id="profile-office" class="form-input" placeholder="Например: 3.12, Переговорная А">
+                    </div>
+                    <div class="form-group">
+                        <label for="profile-home-address">Адрес дома</label>
+                        <input type="text" id="profile-home-address" class="form-input" placeholder="Например: ул. Ленина 10, кв. 5">
+                    </div>
+                    <div id="profile-projects-group" class="form-group">
+                        <label>Мои проекты</label>
+                        <p class="form-hint">Можно выбрать несколько проектов. Они будут использоваться для подбора и матрицы покрытия.</p>
+                        <div id="profile-project-picker" class="profile-project-picker">
+                            <button type="button" id="profile-projects-toggle" class="profile-projects-toggle" aria-expanded="false">
+                                <span id="profile-projects-summary">Выберите проекты</span>
+                                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true">
+                                    <polyline points="6 9 12 15 18 9"></polyline>
+                                </svg>
+                            </button>
+                            <div id="profile-projects-popover" class="profile-projects-popover hidden">
+                                <div id="profile-projects-list" class="profile-projects-list"></div>
+                            </div>
+                        </div>
+                    </div>
+                    <p class="form-hint">Эта информация поможет коллегам найти устройство, если оно у вас.</p>
+                    <div class="form-actions">
+                        <button type="button" class="secondary-btn modal-cancel">Отмена</button>
+                        <button type="submit" class="primary-btn">Сохранить</button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+
+    <div id="project-modal" class="modal hidden">
+        <div class="modal-overlay"></div>
+        <div class="modal-content project-modal-content">
+            <div class="modal-header">
+                <h3 id="project-form-title">Создать проект</h3>
+                <button class="modal-close">&times;</button>
+            </div>
+            <div class="modal-body">
+                <form id="project-form" class="project-form">
+                    <input type="hidden" id="project-id">
+                    <div class="form-row">
+                        <div class="form-group">
+                            <label for="project-name">Название проекта</label>
+                            <input type="text" id="project-name" class="form-input" placeholder="QA Mobile Banking">
+                        </div>
+                        <div class="form-group">
+                            <label for="project-code">Код проекта</label>
+                            <input type="text" id="project-code" class="form-input" placeholder="BANKING">
+                        </div>
+                    </div>
+                    <div class="form-group">
+                        <label for="project-description">Описание</label>
+                        <textarea id="project-description" class="form-input" rows="3" placeholder="Краткое описание проекта"></textarea>
+                    </div>
+                    <div class="form-row">
+                        <div class="form-group">
+                            <label for="project-min-android">Минимальный Android</label>
+                            <input type="text" id="project-min-android" class="form-input" placeholder="14">
+                        </div>
+                        <div class="form-group">
+                            <label for="project-min-ios">Минимальный iOS</label>
+                            <input type="text" id="project-min-ios" class="form-input" placeholder="16">
+                        </div>
+                        <div class="form-group">
+                            <label for="project-min-ipados">Минимальный iPadOS</label>
+                            <input type="text" id="project-min-ipados" class="form-input" placeholder="17">
+                        </div>
+                    </div>
+                    <label class="checkbox-label">
+                        <input type="checkbox" id="project-is-active" checked>
+                        <span>Проект активен</span>
+                    </label>
+                    <div class="form-actions">
+                        <button type="button" class="secondary-btn modal-cancel">Отмена</button>
+                        <button type="button" id="project-form-reset" class="secondary-btn">Сбросить</button>
+                        <button type="submit" class="primary-btn">Сохранить проект</button>
+                    </div>
+                </form>
+                <section id="project-edit-members-section" class="project-edit-members-section hidden">
+                    <div class="card-header">
+                        <div>
+                            <h3>Участники проекта</h3>
+                            <p id="project-assignment-title" class="card-subtitle">Добавляйте или убирайте участников только в режиме редактирования проекта.</p>
+                        </div>
+                    </div>
+                    <div class="project-participants-toolbar">
+                        <input type="text" id="project-participant-search" class="form-input" placeholder="Поиск по имени или email">
+                        <div id="project-participant-caption" class="project-participant-caption">Выберите существующий проект, чтобы редактировать состав.</div>
+                    </div>
+                    <div id="project-assignment-list" class="project-assignment-list"></div>
+                </section>
+            </div>
+        </div>
+    </div>
+
+    <!-- Модальное окно: Добавление/Редактирование устройства -->
+    <div id="device-modal" class="modal hidden">
+        <div class="modal-overlay"></div>
+        <div class="modal-content">
+            <div class="modal-header">
+                <h3 id="device-modal-title">Добавить устройство</h3>
+                <button class="modal-close">&times;</button>
+            </div>
+            <div class="modal-body">
+                <form id="device-form" class="device-form">
+                    <input type="hidden" id="device-id">
+                    <div class="form-row">
+                        <div class="form-group">
+                            <label for="device-name">Название устройства *</label>
+                            <input type="text" id="device-name" class="form-input" required placeholder="iPhone 15 Pro Max">
+                        </div>
+                        <div class="form-group">
+                            <label for="device-type">Тип *</label>
+                            <select id="device-type" class="form-input" required>
+                                <option value="">Выберите</option>
+                                <option value="phone">Телефон</option>
+                                <option value="tablet">Планшет</option>
+                            </select>
+                        </div>
+                    </div>
+                    <div class="form-row">
+                        <div class="form-group">
+                            <label for="device-os">ОС *</label>
+                            <select id="device-os" class="form-input" required>
+                                <option value="">Выберите</option>
+                                <option value="android">Android</option>
+                                <option value="ios">iOS</option>
+                                <option value="ipados">iPadOS</option>
+                            </select>
+                        </div>
+                        <div class="form-group">
+                            <label for="device-version">Версия ОС</label>
+                            <input type="text" id="device-version" class="form-input" placeholder="14.5, Android 13...">
+                        </div>
+                    </div>
+                    <div class="form-row">
+                        <div class="form-group">
+                            <label for="device-screen">Экран</label>
+                            <input type="text" id="device-screen" class="form-input" placeholder="1920x1080">
+                        </div>
+                        <div class="form-group">
+                            <label for="device-shell">Оболочка</label>
+                            <input type="text" id="device-shell" class="form-input" placeholder="MIUI, One UI...">
+                        </div>
+                    </div>
+                    <div class="form-row">
+                        <div class="form-group">
+                            <label for="device-device-id">ID устройства</label>
+                            <input type="text" id="device-device-id" class="form-input" placeholder="device_001">
+                        </div>
+                        <div class="form-group">
+                            <label for="device-serial">Серийный номер</label>
+                            <input type="text" id="device-serial" class="form-input" placeholder="SN12345678">
+                        </div>
+                    </div>
+                    <div class="form-row">
+                        <div class="form-group">
+                            <label for="device-mac">MAC-адрес Wi-Fi</label>
+                            <input type="text" id="device-mac" class="form-input" placeholder="AA:BB:CC:DD:EE:FF">
+                        </div>
+                        <div class="form-group">
+                            <label for="device-imei">IMEI</label>
+                            <input type="text" id="device-imei" class="form-input" placeholder="123456789012345">
+                        </div>
+                    </div>
+                    <div class="form-row">
+                        <div class="form-group">
+                            <label for="device-bluetooth">Версия Bluetooth</label>
+                            <input type="text" id="device-bluetooth" class="form-input" placeholder="5.0">
+                        </div>
+                        <div class="form-group">
+                            <label for="device-udid">UDID (iOS)</label>
+                            <input type="text" id="device-udid" class="form-input" placeholder="00008020-...">
+                        </div>
+                    </div>
+                    <div class="form-group">
+                        <label class="checkbox-label">
+                            <input type="checkbox" id="device-working" checked>
+                            <span>Устройство рабочее</span>
+                        </label>
+                    </div>
+                    <div class="form-group">
+                        <label class="checkbox-label">
+                            <input type="checkbox" id="device-external">
+                            <span>Устройство вне отдела (долгосрочно)</span>
+                        </label>
+                        <p class="form-hint">Для сценариев вида: "Samsung A3 ушел в отдел SA".</p>
+                    </div>
+                    <div id="device-external-fields" class="external-device-fields hidden">
+                        <div class="form-row">
+                            <div class="form-group">
+                                <label for="device-external-department">Подразделение</label>
+                                <input type="text" id="device-external-department" class="form-input" placeholder="Например: SA">
+                            </div>
+                        </div>
+                        <div class="form-group">
+                            <label for="device-external-comment">Комментарий администратора</label>
+                            <textarea id="device-external-comment" class="form-input" rows="3" placeholder="Например: Передано на 2 месяца для стабильного тестового стенда"></textarea>
+                        </div>
+                    </div>
+                    <div class="form-actions">
+                        <button type="button" class="secondary-btn modal-cancel">Отмена</button>
+                        <button type="submit" class="primary-btn">Сохранить</button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+
+    <!-- Модальное окно: Детали устройства -->
+    <div id="device-details-modal" class="modal hidden">
+        <div class="modal-overlay"></div>
+        <div class="modal-content modal-wide">
+            <div class="modal-header">
+                <h3 id="device-details-title">Детали устройства</h3>
+                <button class="modal-close">&times;</button>
+            </div>
+            <div class="modal-body">
+                <div id="device-details-content" class="device-details">
+                    <!-- Детали будут добавлены динамически -->
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Модальное окно: Календарь устройства -->
+    <div id="device-calendar-modal" class="modal hidden">
+        <div class="modal-overlay"></div>
+        <div class="modal-content modal-wide">
+            <div class="modal-header">
+                <h3 id="device-calendar-title">Календарь занятости</h3>
+                <button class="modal-close">&times;</button>
+            </div>
+            <div class="modal-body">
+                <div class="calendar-controls">
+                    <button id="calendar-prev" class="icon-btn" title="Назад">
+                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="16" height="16">
+                            <polyline points="15 18 9 12 15 6"/>
+                        </svg>
+                    </button>
+                    <span id="calendar-period" class="calendar-period-label">Декабрь 2025</span>
+                    <button id="calendar-next" class="icon-btn" title="Вперёд">
+                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="16" height="16">
+                            <polyline points="9 18 15 12 9 6"/>
+                        </svg>
+                    </button>
+                    <div class="calendar-view-toggle">
+                        <button class="calendar-view-btn active" data-view="week">2 недели</button>
+                        <button class="calendar-view-btn" data-view="month">Месяц</button>
+                    </div>
+                </div>
+                <div id="device-timeline" class="device-timeline">
+                    <!-- Timeline рендерится динамически -->
+                </div>
+                <div class="calendar-legend">
+                    <span class="legend-item"><span class="legend-color office"></span> Использую</span>
+                    <span class="legend-item"><span class="legend-color home"></span> Забрал домой</span>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Модальное окно: Force Update (принудительное обновление) -->
+    <div id="force-update-modal" class="modal force-update-modal hidden">
+        <div class="modal-overlay force-update-overlay"></div>
+        <div class="modal-content force-update-content">
+            <div class="force-update-icon">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                    <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/>
+                    <polyline points="7 10 12 15 17 10"/>
+                    <line x1="12" y1="15" x2="12" y2="3"/>
+                </svg>
+            </div>
+            <h2>Требуется обновление</h2>
+            <p id="force-update-message" class="force-update-message">
+                Доступна новая версия приложения с важными обновлениями.
+            </p>
+            <div class="force-update-versions">
+                <div class="version-item">
+                    <span class="version-label">Текущая версия:</span>
+                    <span id="force-update-current-version" class="version-value old">—</span>
+                </div>
+                <div class="version-arrow">→</div>
+                <div class="version-item">
+                    <span class="version-label">Новая версия:</span>
+                    <span id="force-update-version" class="version-value new">—</span>
+                </div>
+            </div>
+            <button id="force-update-btn" class="primary-btn force-update-btn">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="20" height="20">
+                    <path d="M21 2v6h-6"/>
+                    <path d="M3 12a9 9 0 0 1 15-6.7L21 8"/>
+                    <path d="M3 22v-6h6"/>
+                    <path d="M21 12a9 9 0 0 1-15 6.7L3 16"/>
+                </svg>
+                Обновить приложение
+            </button>
+            <p class="force-update-note">
+                Нажмите кнопку выше для обновления. Страница будет перезагружена.
+            </p>
+        </div>
+    </div>
+
+    <!-- Модальное окно истории версий -->
+    <div id="version-history-modal" class="modal version-history-modal hidden">
+        <div class="modal-overlay"></div>
+        <div class="modal-content version-history-content">
+            <div class="modal-header">
+                <h2>История изменений</h2>
+                <button class="modal-close" id="version-history-close" aria-label="Закрыть">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                        <line x1="18" y1="6" x2="6" y2="18"></line>
+                        <line x1="6" y1="6" x2="18" y2="18"></line>
+                    </svg>
+                </button>
+            </div>
+            <div class="modal-body version-history-body">
+                <div id="version-history-list" class="version-history-list">
+                    <!-- Список версий будет добавлен динамически -->
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Уведомления -->
+    <div id="toast-container" class="toast-container"></div>
+
+    <!-- DEMO: mock Firebase SDK (no real firebase, no auth, in-memory data) -->
+    <script defer src="js/core/mock-firebase.js?v=demo6"></script>
+
+    <!-- QR code scanner (CL-05 QR-бронирование) -->
+    <script defer src="vendor/html5-qrcode.min.js"></script>
+
+    <!-- Console guard: suppress noisy logs and redact sensitive output -->
+    <script defer src="js/utils/console-guard.js"></script>
+    
+    <!-- App Scripts with cache-busting version 1.28.0 -->
+    <script defer src="js/core/version.js"></script>
+    <script defer src="js/core/firebase-config.js"></script>
+    <script defer src="js/utils/analytics.js"></script>
+    <script defer src="js/utils/subscription-manager.js"></script>
+    <script defer src="js/utils/search-utils.js"></script>
+    <script defer src="js/core/auth.js"></script>
+    <script defer src="js/modules/users.js"></script>
+    <script defer src="js/modules/projects.js"></script>
+    <script defer src="js/modules/devices/devices.js"></script>
+    <!-- devices-catalog: рендеринг карточек, поиск, сортировка — должен загружаться до coverage/booking/admin -->
+    <script defer src="js/modules/devices/devices-catalog.js"></script>
+    <!-- devices-filters: панель фильтров, персистентность, getFilteredDevices -->
+    <script defer src="js/modules/devices/devices-filters.js"></script>
+    <!-- devices-project-context: выбор проекта в модалах бронирования -->
+    <script defer src="js/modules/devices/devices-project-context.js"></script>
+    <script defer src="js/modules/devices/devices-coverage.js"></script>
+    <script defer src="js/modules/devices/devices-booking.js?v=demo2"></script>
+    <script defer src="js/modules/devices/devices-admin.js"></script>
+    <!-- devices-qr: CL-05 QR-бронирование (сканер + lookup + booking sheet) -->
+    <script defer src="js/modules/devices/devices-qr.js?v=demo4"></script>
+    <!-- notifications: in-app уведомления о событиях устройств -->
+    <script defer src="js/modules/notifications.js"></script>
+    <script defer src="js/core/feature-flags.js"></script>
+    <script defer src="js/core/app.js"></script>
+</body>
+</html>

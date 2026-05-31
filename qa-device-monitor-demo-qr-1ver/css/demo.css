@@ -1,0 +1,25 @@
+/* DEMO overrides: оставить только каталог устройств.
+   Скрываем все навигационные вкладки кроме «Устройства» и переключатель
+   «Каталог / Матрица покрытия». !important — чтобы пережить JS, снимающий .hidden. */
+
+/* Главные вкладки навигации: показываем только devices */
+.nav-tabs .nav-tab:not([data-tab="devices"]) {
+    display: none !important;
+}
+
+/* Переключатель вида внутри раздела устройств (Каталог / Матрица покрытия) */
+.device-view-tabs {
+    display: none !important;
+}
+
+/* Скрыть номер версии (и вход в историю версий по клику) */
+.version,
+.auth-version {
+    display: none !important;
+}
+
+/* Скрыть кнопки «Фильтры» и «Подобрать» (вместе с их обёртками-выпадашками) */
+.filters-dropdown-wrapper:has(#toggle-filters-btn),
+.filters-dropdown-wrapper:has(#device-matcher-btn) {
+    display: none !important;
+}

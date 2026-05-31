@@ -1,0 +1,36 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+<meta charset="UTF-8">
+<title>QR-коды устройств — демо QA Device Monitor</title>
+<style>
+  body{margin:0;font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,sans-serif;background:#f8f8f6;color:#1a1a1a;padding:32px}
+  h1{font-size:22px;margin:0 0 6px}
+  p.sub{color:#6b7280;margin:0 0 28px}
+  .grid{display:grid;grid-template-columns:repeat(2,1fr);gap:24px;max-width:760px}
+  .card{background:#fff;border:1px solid rgba(0,0,0,.08);border-radius:18px;padding:22px;text-align:center;
+    box-shadow:0 14px 40px rgba(17,24,39,.06)}
+  .card img{width:240px;height:240px;image-rendering:pixelated}
+  .name{font-size:18px;font-weight:700;margin-top:10px}
+  .id{color:#6b7280;font-size:14px;margin-top:2px;font-family:ui-monospace,SFMono-Regular,Menlo,monospace}
+  @media print{body{background:#fff;padding:0}.card{box-shadow:none;break-inside:avoid}.no-print{display:none}}
+</style>
+</head>
+<body>
+  <h1>QR-коды устройств</h1>
+  <p class="sub">Наведите камеру через кнопку «Сканировать QR» в демо-приложении — откроется бронирование устройства.</p>
+  <div class="grid">
+    <div class="card"><img src="DEV-001.svg" alt="QR DEV-001"><div class="name">iPhone 13</div><div class="id">DEV-001</div></div>
+    <div class="card"><img src="DEV-002.svg" alt="QR DEV-002"><div class="name">Samsung Galaxy S21 FE</div><div class="id">DEV-002</div></div>
+    <div class="card"><img src="DEV-003.svg" alt="QR DEV-003"><div class="name">Google Pixel 6a</div><div class="id">DEV-003</div></div>
+    <div class="card"><img src="DEV-004.svg" alt="QR DEV-004"><div class="name">Xiaomi Redmi Note 10 Pro</div><div class="id">DEV-004</div></div>
+  </div>
+
+  <h1 style="margin-top:36px">Особые случаи (для демонстрации обработки)</h1>
+  <p class="sub">Сканирование этих кодов показывает альтернативные сценарии QR-флоу.</p>
+  <div class="grid">
+    <div class="card"><img src="DEV-005.svg" alt="QR DEV-005"><div class="name">Samsung Galaxy A50 — неисправно</div><div class="id">DEV-005 · экран «Устройство неисправно»</div></div>
+    <div class="card"><img src="DEV-999.svg" alt="QR DEV-999"><div class="name">Нет в системе</div><div class="id">DEV-999 · «Устройство не найдено»</div></div>
+  </div>
+</body>
+</html>
