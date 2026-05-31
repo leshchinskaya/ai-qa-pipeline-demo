@@ -1,3 +1,8 @@
+# Шаг 2 — Генерация ручных тест-кейсов
+
+Из требований генерируются компонентные и сценарные тесты. Итог: `results/manual_tests/{component,scenario}_tests.json` (38 + 30 тестов).
+
+```console
 make step2
 === Шаг 2: генерация ручных тестов (component + scenario) ===
 cd qa-autogenerator-manual-tests && make cli-generate-tests TYPE=both SKIP_GUI=true
@@ -183,3 +188,4 @@ venv/bin/python3 -m internal.swagger.swagger_aggregator
 Готово:
   qa-autogenerator-manual-tests/results/tests/component/component_tests.json
   qa-autogenerator-manual-tests/results/tests/scenario/scenario_tests.json
+```

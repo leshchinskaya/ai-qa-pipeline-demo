@@ -1,3 +1,8 @@
+# Шаг 10 — План улучшения покрытия
+
+По матрице трассировки формируется план до-покрытия. Итог: `results/autotests/coverage-plan.md`.
+
+```console
 make step10
 === Шаг 10: план улучшения покрытия по trace-матрице (feature: qr-booking, model: claude-opus-4-7) ===
 --- Строю план покрытия через Claude (model: claude-opus-4-7) ---
@@ -13,3 +18,4 @@ claude -p --dangerously-skip-permissions --model claude-opus-4-7 "$COVERAGE_PLAN
 
 Готово:
   План покрытия: results/autotests/coverage-plan.md
+```

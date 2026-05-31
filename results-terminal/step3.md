@@ -1,3 +1,8 @@
+# Шаг 3 — Генерация e2e-автотестов из сценарных тестов
+
+Фреймворк `e2e-test-framework` создаёт Playwright/TS-тесты из `scenario_tests.json`. Итог: 17 активных + 13 `test.skip` (с причинами).
+
+```console
 make step3
 === Шаг 3: генерация автотестов из scenario_tests.json (model: claude-opus-4-7) ===
 cd e2e-test-framework && make cli-generate-all-e2e-tests \
@@ -93,3 +98,4 @@ cd e2e-test-framework && make cli-generate-all-e2e-tests \
   qa-device-monitor/tests/e2e/qr-booking/*.spec.ts
   qa-device-monitor/tests/pages/*.page.ts
   e2e-test-framework/results/qr-booking/review.md
+```

@@ -1,3 +1,8 @@
+# Шаг 1 — Ревью требований
+
+Ревью ТЗ (v1.1) инструментом `qa-autogenerator-manual-tests`. Итог: оценка **42%**, отчёт `results/review_requirements/review.md`.
+
+```console
 make step1
 === Шаг 1: ревью требований ===
 mkdir -p qa-autogenerator-manual-tests/results/requirements
@@ -38,6 +43,4 @@ cd qa-autogenerator-manual-tests && make cli-review-requirements
 ✅ Ревью требований завершено. Результат в results/tests/review_requirements/review.md
 
 Готово. Открой: qa-autogenerator-manual-tests/results/tests/review_requirements/review.md
-
-
-
+```

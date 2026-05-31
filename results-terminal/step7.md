@@ -1,3 +1,8 @@
+# Шаг 7 — План дореализации кода по отчёту тестов
+
+По результатам прогона строится план доработок. Итог: `results/autotests/implementation-plan.md`.
+
+```console
 make step7
 === Шаг 7: план дореализации кода по отчёту тестов (feature: qr-booking) ===
 --- Прогоняю тесты с JSON-репортером для свежих данных ---
@@ -25,3 +30,4 @@ claude -p --dangerously-skip-permissions --model claude-opus-4-7 "$PLAN_PROMPT" 
 Готово:
   План:       results/autotests/implementation-plan.md
   Сырые данные: results/autotests/test-results.json
+```

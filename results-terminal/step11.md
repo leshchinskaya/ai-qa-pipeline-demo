@@ -1,3 +1,8 @@
+# Шаг 11 — Применение плана улучшения покрытия
+
+Добавляются/расширяются тесты по плану покрытия. Итог: `results/autotests/coverage-applied.md`.
+
+```console
 make step11
 === Шаг 11: применение плана улучшения покрытия (feature: qr-booking, model: claude-opus-4-7) ===
 claude -p --dangerously-skip-permissions --model claude-opus-4-7 "$COVERAGE_APPLY_PROMPT" < /dev/null
@@ -15,3 +20,4 @@ Done. Applied all 26 items from the coverage plan and saved the report.
 Готово:
   Отчёт применения: results/autotests/coverage-applied.md
   Проверь: make step4 → make step5
+```

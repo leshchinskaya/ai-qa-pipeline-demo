@@ -1,3 +1,8 @@
+# Шаг 9 — Трассировка требований → код/тесты
+
+Строится матрица соответствия BR.05.x ↔ код ↔ тесты. Итог: `results/autotests/traceability-matrix.md`.
+
+```console
 make step9
 === Шаг 9: трассировка требований → код/тесты (feature: qr-booking, model: claude-opus-4-7) ===
 --- Строю матрицу через Claude (model: claude-opus-4-7) ---
@@ -19,3 +24,4 @@ claude -p --dangerously-skip-permissions --model claude-opus-4-7 "$TRACE_PROMPT"
 
 Готово:
   Матрица: results/autotests/traceability-matrix.md
+```

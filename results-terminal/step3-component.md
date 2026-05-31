@@ -1,3 +1,8 @@
+# Шаг 3 (component) — Генерация e2e-автотестов из компонентных тестов
+
+То же из `component_tests.json`. Итог: 47 активных + 14 `test.skip` по 4 спекам.
+
+```console
 make step3-component
 === Шаг 3 (component): генерация автотестов из component_tests.json ===
 cd e2e-test-framework && make cli-generate-all-e2e-tests \
@@ -100,3 +105,4 @@ cd e2e-test-framework && make cli-generate-all-e2e-tests \
    prompt: results/qr-booking/final_prompt.txt
    tests:  внутри qa-device-monitor/tests/
    review: results/qr-booking/review.md
+```
