@@ -1,0 +1,577 @@
+[
+  {
+    "labels": ["smoke"],
+    "summary": "QR-сканер - успешное открытие и распознавание кода",
+    "description": "ТЗ: https://wiki.example.com/pages/viewpage.action?pageId=TODO\nДизайн: —\nSwagger: —",
+    "priority": "Blocker",
+    "estimate": 8,
+    "testRepositoryPath": "qr-бронирование/сканер/scenario",
+    "testCaseType": "scenario",
+    "steps": [
+      {
+        "action": "Авторизоваться в приложении и перейти на вкладку 'Устройства'",
+        "data": "Предусловие: пользователь авторизован",
+        "result": "Вкладка 'Устройства' открыта. Отображается кнопка 'Сканировать QR'"
+      },
+      {
+        "action": "Тапнуть кнопку 'Сканировать QR'",
+        "data": "",
+        "result": "Система запрашивает разрешение {{getUserMedia}} на доступ к камере"
+      },
+      {
+        "action": "Предоставить разрешение на использование камеры",
+        "data": "",
+        "result": "Открывается экран сканера с активным видеопотоком камеры"
+      },
+      {
+        "action": "Навести камеру на QR-код устройства",
+        "data": "Устройство в статусе {{available}}",
+        "result": "- QR-код распознаётся\n- Отображается превью карточки устройства до подтверждения бронирования"
+      }
+    ]
+  },
+  {
+    "labels": ["sanity"],
+    "summary": "QR-сканер - открытие сканера без авторизации",
+    "description": "ТЗ: https://wiki.example.com/pages/viewpage.action?pageId=TODO\nДизайн: —\nSwagger: —",
+    "priority": "Normal",
+    "estimate": 5,
+    "testRepositoryPath": "qr-бронирование/сканер/scenario",
+    "testCaseType": "scenario",
+    "steps": [
+      {
+        "action": "Открыть приложение без авторизации и попытаться открыть экран сканера по прямой ссылке",
+        "data": "Предусловие: пользователь не авторизован",
+        "result": "- Кнопка 'Сканировать QR' на вкладке 'Устройства' скрыта\n- Выполняется редирект на экран Google OAuth"
+      },
+      {
+        "action": "Пройти аутентификацию через Google OAuth",
+        "data": "",
+        "result": "После успешного входа пользователь возвращается на экран сканера. Ранее распознанный {{deviceId}} не теряется (?)"
+      }
+    ]
+  },
+  {
+    "labels": ["sanity"],
+    "summary": "QR-сканер - отказ в доступе к камере",
+    "description": "ТЗ: https://wiki.example.com/pages/viewpage.action?pageId=TODO\nДизайн: —\nSwagger: —",
+    "priority": "Normal",
+    "estimate": 5,
+    "testRepositoryPath": "qr-бронирование/сканер/scenario",
+    "testCaseType": "scenario",
+    "steps": [
+      {
+        "action": "Тапнуть кнопку 'Сканировать QR' и отклонить запрос доступа к камере",
+        "data": "Предусловие: пользователь авторизован",
+        "result": "- Отображается подсказка 'Доступ к камере запрещён'\n- Доступны кнопки 'Загрузить картинку с QR' и 'Ввести ID устройства вручную'"
+      },
+      {
+        "action": "Предоставить разрешение на камеру в настройках устройства и вернуться в приложение",
+        "data": "",
+        "result": "Возможен retry сканера без перезагрузки страницы (?)"
+      }
+    ]
+  },
+  {
+    "labels": ["sanity"],
+    "summary": "QR-сканер - QR не распознаётся 10 секунд",
+    "description": "ТЗ: https://wiki.example.com/pages/viewpage.action?pageId=TODO\nДизайн: —\nSwagger: —",
+    "priority": "Normal",
+    "estimate": 5,
+    "testRepositoryPath": "qr-бронирование/сканер/scenario",
+    "testCaseType": "scenario",
+    "steps": [
+      {
+        "action": "Открыть сканер QR и удерживать камеру активной без наведения на распознаваемый QR-код в течение 10 секунд",
+        "data": "Предусловие: пользователь авторизован; разрешение на камеру предоставлено; сканер открыт",
+        "result": "Через 10 секунд отображается подсказка 'Не получается распознать? Попробуйте сменить ракурс или ввести ID вручную'"
+      },
+      {
+        "action": "Тапнуть на предложение ввести ID вручную",
+        "data": "",
+        "result": "Открывается поле ручного ввода {{deviceId}}"
+      }
+    ]
+  },
+  {
+    "labels": ["sanity"],
+    "summary": "QR-сканер - загрузка фото QR-кода (fallback)",
+    "description": "ТЗ: https://wiki.example.com/pages/viewpage.action?pageId=TODO\nДизайн: —\nSwagger: —",
+    "priority": "Normal",
+    "estimate": 7,
+    "testRepositoryPath": "qr-бронирование/сканер/scenario",
+    "testCaseType": "scenario",
+    "steps": [
+      {
+        "action": "На экране сканера выбрать альтернативный путь 'Загрузить картинку с QR'",
+        "data": "Предусловие: пользователь на экране сканера (из состояния отказа камеры или через меню)",
+        "result": "Открывается диалог выбора файла или фотографии"
+      },
+      {
+        "action": "Загрузить фото с QR-кодом устройства",
+        "data": "Фото содержит валидный QR-код устройства в статусе {{available}}",
+        "result": "- Система распознаёт QR из изображения\n- Открывается шторка бронирования с предзаполненными данными устройства"
+      }
+    ]
+  },
+  {
+    "labels": ["sanity"],
+    "summary": "QR-сканер - ручной ввод deviceId",
+    "description": "ТЗ: https://wiki.example.com/pages/viewpage.action?pageId=TODO\nДизайн: —\nSwagger: —",
+    "priority": "Normal",
+    "estimate": 7,
+    "testRepositoryPath": "qr-бронирование/сканер/scenario",
+    "testCaseType": "scenario",
+    "steps": [
+      {
+        "action": "Выбрать 'Ввести ID устройства вручную' и ввести корректный {{deviceId}}",
+        "data": "Предусловие: пользователь на экране сканера; устройство в статусе {{available}}",
+        "result": "- Выполняется поиск устройства в Firestore\n- Открывается шторка бронирования с предзаполненными данными устройства, аналогично успешному сканированию QR"
+      },
+      {
+        "action": "Тапнуть 'Подтвердить' в шторке бронирования",
+        "data": "",
+        "result": "- Устройство переходит в статус {{booked}}\n- В коллекции {{bookings}} создаётся запись с {{action}} = take, {{source}} = 'qr'\n- Отображается toast с подтверждением, сканер закрывается"
+      }
+    ]
+  },
+  {
+    "labels": ["sanity"],
+    "summary": "QR-сканер - переключение камер на мобильном устройстве",
+    "description": "ТЗ: https://wiki.example.com/pages/viewpage.action?pageId=TODO\nДизайн: —\nSwagger: —",
+    "priority": "Minor",
+    "estimate": 5,
+    "testRepositoryPath": "qr-бронирование/сканер/scenario",
+    "testCaseType": "scenario",
+    "steps": [
+      {
+        "action": "Открыть сканер QR на мобильном устройстве (PWA) с несколькими камерами",
+        "data": "Предусловие: устройство имеет фронтальную и тыловую камеру; разрешение на камеру предоставлено",
+        "result": "Отображается активный экран сканера с элементом управления для переключения камер"
+      },
+      {
+        "action": "Тапнуть кнопку переключения камеры",
+        "data": "",
+        "result": "- Активируется другая камера\n- QR-код может быть распознан без перезапуска сканера (?)"
+      }
+    ]
+  },
+  {
+    "labels": ["smoke"],
+    "summary": "QR-бронирование - успешное бронирование устройства (office)",
+    "description": "ТЗ: https://wiki.example.com/pages/viewpage.action?pageId=TODO\nДизайн: —\nSwagger: —",
+    "priority": "Blocker",
+    "estimate": 7,
+    "testRepositoryPath": "qr-бронирование/шторка-брони/scenario",
+    "testCaseType": "scenario",
+    "steps": [
+      {
+        "action": "Авторизоваться, открыть сканер QR и отсканировать QR-код устройства",
+        "data": "Предусловие: устройство в статусе {{available}}",
+        "result": "- Открывается шторка бронирования с предзаполненным типом 'Использую (office)' и именем текущего пользователя\n- Активна кнопка 'Подтвердить'"
+      },
+      {
+        "action": "Тапнуть 'Подтвердить' в шторке бронирования",
+        "data": "",
+        "result": "- Устройство переходит в статус {{booked}}\n- Поля {{bookingType}} = office, {{currentUserId}}, {{currentUserName}}, {{currentUserPhoto}}, {{bookedAt}} заполнены корректно\n- В коллекции {{bookings}} создаётся запись с {{action}} = take, {{source}} = 'qr'\n- Отображается toast с подтверждением\n- Сканер закрывается\n- Каталог устройств обновляется в реальном времени"
+      }
+    ]
+  },
+  {
+    "labels": ["sanity"],
+    "summary": "QR-бронирование. Шторка - бронирование с типом home",
+    "description": "ТЗ: https://wiki.example.com/pages/viewpage.action?pageId=TODO\nДизайн: —\nSwagger: —",
+    "priority": "Normal",
+    "estimate": 7,
+    "testRepositoryPath": "qr-бронирование/шторка-брони/scenario",
+    "testCaseType": "scenario",
+    "steps": [
+      {
+        "action": "После сканирования доступного устройства в шторке переключить тип брони с 'office' на 'home'",
+        "data": "Предусловие: шторка бронирования открыта; устройство в статусе {{available}}",
+        "result": "Появляется обязательное поле 'Дата возврата'"
+      },
+      {
+        "action": "Заполнить дату возврата и тапнуть 'Подтвердить'",
+        "data": "Выбрана конкретная дата возврата",
+        "result": "- Устройство бронируется с {{bookingType}} = home\n- Поле {{bookedUntil}} заполнено выбранной датой возврата\n- В коллекции {{bookings}} создаётся запись с {{action}} = take, {{source}} = 'qr'\n- Отображается toast с подтверждением"
+      }
+    ]
+  },
+  {
+    "labels": ["sanity"],
+    "summary": "QR-бронирование. Шторка - выбор проекта при бронировании",
+    "description": "ТЗ: https://wiki.example.com/pages/viewpage.action?pageId=TODO\nДизайн: —\nSwagger: —",
+    "priority": "Normal",
+    "estimate": 7,
+    "testRepositoryPath": "qr-бронирование/шторка-брони/scenario",
+    "testCaseType": "scenario",
+    "steps": [
+      {
+        "action": "В шторке бронирования открыть поле выбора проектов и выбрать один или несколько проектов",
+        "data": "Предусловие: шторка бронирования открыта после сканирования доступного устройства",
+        "result": "Выбранные проекты отображаются в поле. Доступен выбор нескольких проектов одновременно"
+      },
+      {
+        "action": "Тапнуть 'Подтвердить'",
+        "data": "",
+        "result": "- В Firestore заполнены поля {{currentProjectIds}}, {{currentProjectCodes}}, {{currentProjectNames}}\n- Заполнены {{currentProjectId}}, {{currentProjectCode}}, {{currentProjectName}} для основного проекта"
+      }
+    ]
+  },
+  {
+    "labels": ["sanity"],
+    "summary": "QR-бронирование - сканирование занятого устройства",
+    "description": "ТЗ: https://wiki.example.com/pages/viewpage.action?pageId=TODO\nДизайн: —\nSwagger: —",
+    "priority": "Normal",
+    "estimate": 5,
+    "testRepositoryPath": "qr-бронирование/сканер/scenario",
+    "testCaseType": "scenario",
+    "steps": [
+      {
+        "action": "Отсканировать QR-код устройства, занятого другим пользователем",
+        "data": "Предусловие: устройство в статусе {{booked}}; {{currentUserId}} !== текущий пользователь",
+        "result": "- Открывается карточка занятости с именем текущего владельца ({{currentUserName}}) и датой возврата ({{bookedUntil}}, если задана)\n- Кнопка подтверждения брони неактивна с подсказкой 'Устройство уже занято'\n- Новая запись в {{bookings}} не создаётся"
+      }
+    ]
+  },
+  {
+    "labels": ["sanity"],
+    "summary": "QR-бронирование - сканирование собственного устройства (office)",
+    "description": "ТЗ: https://wiki.example.com/pages/viewpage.action?pageId=TODO\nДизайн: —\nSwagger: —",
+    "priority": "Normal",
+    "estimate": 5,
+    "testRepositoryPath": "qr-бронирование/сканер/scenario",
+    "testCaseType": "scenario",
+    "steps": [
+      {
+        "action": "Отсканировать QR-код устройства, ранее забронированного текущим пользователем с типом 'office'",
+        "data": "Предусловие: устройство в статусе {{booked}}; {{currentUserId}} === Auth.currentUser.uid; {{bookingType}} = office",
+        "result": "- Открывается карточка устройства с активной кнопкой 'Вернуть'\n- Кнопка 'Изменить дату возврата' отсутствует\n- Дублирующая запись take в {{bookings}} не создаётся"
+      }
+    ]
+  },
+  {
+    "labels": ["sanity"],
+    "summary": "QR-бронирование - сканирование собственного устройства (home)",
+    "description": "ТЗ: https://wiki.example.com/pages/viewpage.action?pageId=TODO\nДизайн: —\nSwagger: —",
+    "priority": "Normal",
+    "estimate": 5,
+    "testRepositoryPath": "qr-бронирование/сканер/scenario",
+    "testCaseType": "scenario",
+    "steps": [
+      {
+        "action": "Отсканировать QR-код устройства, ранее забронированного текущим пользователем с типом 'home'",
+        "data": "Предусловие: устройство в статусе {{booked}}; {{currentUserId}} === Auth.currentUser.uid; {{bookingType}} = home",
+        "result": "- Открывается карточка устройства с активными кнопками 'Вернуть' и 'Изменить дату возврата'\n- Дублирующая запись take в {{bookings}} не создаётся"
+      }
+    ]
+  },
+  {
+    "labels": ["sanity"],
+    "summary": "QR-бронирование - возврат собственного устройства через QR",
+    "description": "ТЗ: https://wiki.example.com/pages/viewpage.action?pageId=TODO\nДизайн: —\nSwagger: —",
+    "priority": "Normal",
+    "estimate": 7,
+    "testRepositoryPath": "qr-бронирование/шторка-брони/scenario",
+    "testCaseType": "scenario",
+    "steps": [
+      {
+        "action": "В карточке собственного устройства (открытой после сканирования QR) тапнуть 'Вернуть'",
+        "data": "Предусловие: карточка собственного устройства открыта после сканирования; устройство забронировано на текущего пользователя",
+        "result": "- Запускается стандартный return-flow\n- Устройство переходит в статус {{available}}\n- В {{bookings}} создаётся запись с {{action}} = return, {{source}} = 'qr'\n- Отображается toast с результатом\n- Каталог устройств обновляется в реальном времени"
+      }
+    ]
+  },
+  {
+    "labels": ["sanity"],
+    "summary": "QR-бронирование - изменение даты возврата через QR",
+    "description": "ТЗ: https://wiki.example.com/pages/viewpage.action?pageId=TODO\nДизайн: —\nSwagger: —",
+    "priority": "Normal",
+    "estimate": 7,
+    "testRepositoryPath": "qr-бронирование/шторка-брони/scenario",
+    "testCaseType": "scenario",
+    "steps": [
+      {
+        "action": "В карточке собственного устройства с типом 'home' (открытой после сканирования QR) тапнуть 'Изменить дату возврата'",
+        "data": "Предусловие: карточка собственного устройства с {{bookingType}} = home открыта после сканирования",
+        "result": "Открывается форма редактирования с текущим значением {{bookedUntil}}"
+      },
+      {
+        "action": "Выбрать новую дату возврата и подтвердить изменение",
+        "data": "Выбрана дата позже текущего значения {{bookedUntil}}",
+        "result": "- В {{bookings}} создаётся запись с {{action}} = date_change, {{source}} = 'qr'\n- Поле {{bookedUntil}} устройства обновляется на новое значение\n- Отображается toast с подтверждением\n- Сканер закрывается"
+      }
+    ]
+  },
+  {
+    "labels": ["sanity"],
+    "summary": "QR-бронирование - сканирование external устройства",
+    "description": "ТЗ: https://wiki.example.com/pages/viewpage.action?pageId=TODO\nДизайн: —\nSwagger: —",
+    "priority": "Normal",
+    "estimate": 5,
+    "testRepositoryPath": "qr-бронирование/сканер/scenario",
+    "testCaseType": "scenario",
+    "steps": [
+      {
+        "action": "Отсканировать QR-код устройства с внешним статусом",
+        "data": "Предусловие: устройство в статусе {{external}}",
+        "result": "- Кнопки бронирования скрыты\n- Отображаются данные {{externalDepartment}} и {{externalComment}}\n- Действия по брони недоступны"
+      }
+    ]
+  },
+  {
+    "labels": ["sanity"],
+    "summary": "QR-бронирование - сканирование неисправного устройства",
+    "description": "ТЗ: https://wiki.example.com/pages/viewpage.action?pageId=TODO\nДизайн: —\nSwagger: —",
+    "priority": "Normal",
+    "estimate": 5,
+    "testRepositoryPath": "qr-бронирование/сканер/scenario",
+    "testCaseType": "scenario",
+    "steps": [
+      {
+        "action": "Отсканировать QR-код неисправного устройства",
+        "data": "Предусловие: устройство с {{isWorking}} = false; пользователь не является администратором",
+        "result": "- Отображается баннер 'Устройство неисправно'\n- Кнопка 'Подтвердить' отключена\n- Запись в {{bookings}} не создаётся\n- Статус устройства не меняется"
+      }
+    ]
+  },
+  {
+    "labels": ["sanity"],
+    "summary": "QR-бронирование - администратор сканирует неисправное устройство",
+    "description": "ТЗ: https://wiki.example.com/pages/viewpage.action?pageId=TODO\nДизайн: —\nSwagger: —",
+    "priority": "Normal",
+    "estimate": 5,
+    "testRepositoryPath": "qr-бронирование/сканер/scenario",
+    "testCaseType": "scenario",
+    "steps": [
+      {
+        "action": "Отсканировать QR-код неисправного устройства под учётной записью администратора",
+        "data": "Предусловие: устройство с {{isWorking}} = false; текущий пользователь — администратор",
+        "result": "- Отображается баннер 'Устройство неисправно'\n- Кнопка 'Подтвердить' отключена\n- Дополнительно доступна кнопка 'Открыть карточку устройства', ведущая в административную карточку устройства"
+      }
+    ]
+  },
+  {
+    "labels": ["sanity"],
+    "summary": "QR-бронирование - подтверждение получения устройства (pendingReceipt)",
+    "description": "ТЗ: https://wiki.example.com/pages/viewpage.action?pageId=TODO\nДизайн: —\nSwagger: —",
+    "priority": "Normal",
+    "estimate": 7,
+    "testRepositoryPath": "qr-бронирование/шторка-брони/scenario",
+    "testCaseType": "scenario",
+    "steps": [
+      {
+        "action": "Отсканировать QR-код устройства, переданного на текущего пользователя",
+        "data": "Предусловие: устройство с {{pendingReceipt}} = true; {{bookedFor}} === Auth.currentUser.uid",
+        "result": "- Система переходит в режим подтверждения получения (новая бронь не создаётся)\n- Поле {{pendingReceipt}} сбрасывается\n- Поле {{bookedAt}} не перетирается\n- В {{bookings}} создаётся запись с {{action}} = receipt_confirmed\n- Отображается toast с подтверждением получения"
+      }
+    ]
+  },
+  {
+    "labels": ["sanity"],
+    "summary": "QR-сканер - устройство не найдено в системе",
+    "description": "ТЗ: https://wiki.example.com/pages/viewpage.action?pageId=TODO\nДизайн: —\nSwagger: —",
+    "priority": "Normal",
+    "estimate": 5,
+    "testRepositoryPath": "qr-бронирование/сканер/scenario",
+    "testCaseType": "scenario",
+    "steps": [
+      {
+        "action": "Отсканировать QR-код, который не соответствует ни одному устройству в системе",
+        "data": "Предусловие: QR содержит неизвестный {{deviceId}}, отсутствующий в Firestore",
+        "result": "- Отображается ошибка 'Устройство не найдено'\n- Запись в {{bookings}} не создаётся\n- Статус устройств не меняется"
+      }
+    ]
+  },
+  {
+    "labels": ["sanity"],
+    "summary": "QR-бронирование - ошибка записи в Firestore",
+    "description": "ТЗ: https://wiki.example.com/pages/viewpage.action?pageId=TODO\nДизайн: —\nSwagger: —",
+    "priority": "Normal",
+    "estimate": 7,
+    "testRepositoryPath": "qr-бронирование/шторка-брони/scenario",
+    "testCaseType": "scenario",
+    "steps": [
+      {
+        "action": "Тапнуть 'Подтвердить' в шторке бронирования при наличии ошибки записи в Firestore",
+        "data": "Предусловие: шторка бронирования открыта; при попытке записи в Firestore возникает ошибка (сбой сети, нарушение прав доступа или конфликт версий)",
+        "result": "- Отображается баннер с описанием причины ошибки и кнопкой 'Повторить'\n- Статус устройства не меняется до успешного подтверждения\n- Пользователь не видит сообщение об успехе при фактической ошибке"
+      }
+    ]
+  },
+  {
+    "labels": ["sanity"],
+    "summary": "QR-бронирование - гонка двух одновременных сканирований",
+    "description": "ТЗ: https://wiki.example.com/pages/viewpage.action?pageId=TODO\nДизайн: —\nSwagger: —",
+    "priority": "Normal",
+    "estimate": 10,
+    "testRepositoryPath": "qr-бронирование/шторка-брони/scenario",
+    "testCaseType": "scenario",
+    "steps": [
+      {
+        "action": "Два пользователя одновременно сканируют QR-код одного устройства, открывают шторку бронирования и оба тапают 'Подтвердить'",
+        "data": "Предусловие: устройство в статусе {{available}}; оба пользователя авторизованы под разными учётными записями",
+        "result": "- Запись брони выполняется атомарно через Firestore transaction с проверкой статуса\n- Бронь получает только один пользователь (отображается toast с подтверждением, сканер закрывается)\n- Второй пользователь видит экран занятости с сообщением 'Устройство только что забронировали'\n- В {{bookings}} создаётся ровно одна запись с {{action}} = take"
+      }
+    ]
+  },
+  {
+    "labels": ["sanity"],
+    "summary": "QR-сканер - offline-режим",
+    "description": "ТЗ: https://wiki.example.com/pages/viewpage.action?pageId=TODO\nДизайн: —\nSwagger: —",
+    "priority": "Normal",
+    "estimate": 5,
+    "testRepositoryPath": "qr-бронирование/сканер/scenario",
+    "testCaseType": "scenario",
+    "steps": [
+      {
+        "action": "Открыть сканер QR при отсутствии сетевого подключения",
+        "data": "Предусловие: устройство в режиме offline ({{navigator.onLine}} === false)",
+        "result": "- Отображается баннер 'Нет сети, бронирование недоступно'\n- Запись в Firestore не выполняется"
+      },
+      {
+        "action": "Восстановить сетевое подключение",
+        "data": "",
+        "result": "Пользователь может вручную повторить операцию бронирования"
+      }
+    ]
+  },
+  {
+    "labels": ["sanity"],
+    "summary": "QR-бронирование - бронирование с shared-аккаунта",
+    "description": "ТЗ: https://wiki.example.com/pages/viewpage.action?pageId=TODO\nДизайн: —\nSwagger: —",
+    "priority": "Normal",
+    "estimate": 7,
+    "testRepositoryPath": "qr-бронирование/шторка-брони/scenario",
+    "testCaseType": "scenario",
+    "steps": [
+      {
+        "action": "Авторизоваться через shared-аккаунт и отсканировать QR-код доступного устройства",
+        "data": "Предусловие: текущий аккаунт — qatest@test.dev (shared-аккаунт); устройство в статусе {{available}}",
+        "result": "- Шторка бронирования открывается с обязательным полем выбора пользователя\n- Доступен поиск по пользователям"
+      },
+      {
+        "action": "Выбрать пользователя из списка и тапнуть 'Подтвердить'",
+        "data": "Выбран конкретный пользователь из списка",
+        "result": "- {{currentUserId}} = выбранный пользователь\n- {{bookedBy}} = shared-аккаунт (qatest@test.dev)\n- {{bookedByName}} заполнен именем shared-аккаунта\n- Устройство переходит в статус {{booked}}\n- Отображается toast с подтверждением"
+      }
+    ]
+  },
+  {
+    "labels": ["sanity"],
+    "summary": "QR-бронирование - отображение операций в истории",
+    "description": "ТЗ: https://wiki.example.com/pages/viewpage.action?pageId=TODO\nДизайн: —\nSwagger: —",
+    "priority": "Normal",
+    "estimate": 7,
+    "testRepositoryPath": "qr-бронирование/история/scenario",
+    "testCaseType": "scenario",
+    "steps": [
+      {
+        "action": "Выполнить успешное QR-бронирование устройства, затем перейти на вкладку 'История'",
+        "data": "Предусловие: QR-бронирование успешно завершено; в {{bookings}} есть запись с {{source}} = 'qr'",
+        "result": "- В timeline отображается запись QR-бронирования\n- Запись содержит корректные {{deviceName}}, {{userName}}, время {{createdAt}}\n- Запись идентична ручным бронированиям по формату"
+      },
+      {
+        "action": "Выполнить QR-возврат устройства и QR-подтверждение получения, затем проверить вкладку 'История'",
+        "data": "Предусловие: в {{bookings}} есть записи с {{action}} = return и {{action}} = receipt_confirmed, оба с {{source}} = 'qr'",
+        "result": "- Записи QR-возврата и QR-подтверждения получения отображаются в timeline с корректным {{action}} и {{createdAt}}\n- Формат записей идентичен ручным бронированиям"
+      }
+    ]
+  },
+  {
+    "labels": ["sanity"],
+    "summary": "QR-код - отсутствие чувствительных данных в полезной нагрузке",
+    "description": "ТЗ: https://wiki.example.com/pages/viewpage.action?pageId=TODO\nДизайн: —\nSwagger: —",
+    "priority": "Minor",
+    "estimate": 5,
+    "testRepositoryPath": "qr-бронирование/сканер/scenario",
+    "testCaseType": "scenario",
+    "steps": [
+      {
+        "action": "Открыть карточку устройства в каталоге и проверить содержимое QR-кода сторонним ридером",
+        "data": "Предусловие: пользователь авторизован; QR-код устройства отображается в карточке и в административной панели",
+        "result": "- Полезная нагрузка QR содержит только {{deviceId}} или короткую ссылку вида {{/#device/<deviceId>}}\n- Email пользователя, токены аутентификации, профиль и данные проекта в QR отсутствуют"
+      }
+    ]
+  },
+  {
+    "labels": ["sanity"],
+    "summary": "QR-бронирование - отображение QR-кода в карточке устройства",
+    "description": "ТЗ: https://wiki.example.com/pages/viewpage.action?pageId=TODO\nДизайн: —\nSwagger: —",
+    "priority": "Normal",
+    "estimate": 7,
+    "testRepositoryPath": "qr-бронирование/сканер/scenario",
+    "testCaseType": "scenario",
+    "steps": [
+      {
+        "action": "Авторизоваться и открыть карточку устройства в каталоге",
+        "data": "Предусловие: пользователь авторизован",
+        "result": "В карточке устройства отображается QR-код. Содержимое QR содержит только {{deviceId}} или короткую ссылку вида {{/#device/<deviceId>}}"
+      },
+      {
+        "action": "Сравнить QR-код из карточки устройства с QR-кодом из административной панели для того же устройства, а также с QR-кодом другого устройства",
+        "data": "",
+        "result": "- QR-коды в карточке и в административной панели идентичны\n- QR-коды двух разных устройств различаются (?)"
+      }
+    ]
+  },
+  {
+    "labels": ["sanity"],
+    "summary": "TODO QR-бронирование - уведомление предыдущему владельцу",
+    "description": "ТЗ: https://wiki.example.com/pages/viewpage.action?pageId=TODO\nДизайн: —\nSwagger: —",
+    "priority": "Minor",
+    "estimate": 10,
+    "testRepositoryPath": "qr-бронирование/шторка-брони/scenario",
+    "testCaseType": "scenario",
+    "steps": [
+      {
+        "action": "Выполнить QR-бронирование устройства под учётной записью нового пользователя при наличии предыдущего владельца",
+        "data": "Предусловие: устройство ранее было у другого пользователя; оба пользователя авторизованы под разными учётными записями",
+        "result": "- Устройство успешно бронируется на нового пользователя\n- Предыдущий владелец получает in-app уведомление с именем устройства и именем нового владельца (?)\n- Администратор видит событие в разделе активности (?)"
+      }
+    ]
+  },
+  {
+    "labels": ["sanity"],
+    "summary": "TODO QR-сканер - доступность (a11y)",
+    "description": "ТЗ: https://wiki.example.com/pages/viewpage.action?pageId=TODO\nДизайн: —\nSwagger: —",
+    "priority": "Minor",
+    "estimate": 10,
+    "testRepositoryPath": "qr-бронирование/сканер/scenario",
+    "testCaseType": "scenario",
+    "steps": [
+      {
+        "action": "Открыть экран сканера QR и проверить навигацию с помощью клавиатуры",
+        "data": "Предусловие: используется keyboard navigation или screen reader",
+        "result": "- Все интерактивные элементы экрана сканера имеют атрибуты aria-label (?)\n- Фокус-trap активен внутри модального окна (?)\n- Нажатие Esc закрывает сканер (?)"
+      },
+      {
+        "action": "Проверить доступность ручного ввода {{deviceId}} как альтернативы для пользователей без камеры",
+        "data": "",
+        "result": "- Поле ручного ввода {{deviceId}} доступно через клавиатурную навигацию и screen reader (?)\n- Ввод {{deviceId}} вручную запускает тот же флоу, что и успешное сканирование (?)"
+      }
+    ]
+  },
+  {
+    "labels": ["sanity"],
+    "summary": "TODO QR-бронирование - аналитика событий qr_scan",
+    "description": "ТЗ: https://wiki.example.com/pages/viewpage.action?pageId=TODO\nДизайн: —\nSwagger: —",
+    "priority": "Minor",
+    "estimate": 10,
+    "testRepositoryPath": "qr-бронирование/аналитика/scenario",
+    "testCaseType": "scenario",
+    "steps": [
+      {
+        "action": "Выполнить успешное QR-бронирование через камеру на мобильном устройстве и проверить аналитику в административной панели",
+        "data": "Предусловие: QR-бронирование выполнено через камеру мобильного устройства; тип брони — office",
+        "result": "- В аналитику отправляется событие {{qr_scan}} с полями:\n-- {{result}} = success\n-- {{source}} = camera\n-- {{device_form}} = mobile\n-- {{booking_type}} = office\n- Агрегированные данные доступны в административной панели (?)"
+      },
+      {
+        "action": "Выполнить негативные QR-сценарии (устройство не найдено, занято, external, неисправно, ошибка) и проверить события аналитики",
+        "data": "Предусловие: выполнены соответствующие негативные QR-сценарии",
+        "result": "- Для каждого негативного результата в аналитику отправляется событие {{qr_scan}} с корректным значением {{result}}: not_found, already_booked_other, already_own, external, not_working, error (?)\n- Поля {{source}} и {{device_form}} заполнены корректно для каждого события (?)"
+      }
+    ]
+  }
+]
